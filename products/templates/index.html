@@ -13,6 +13,1426 @@
     <link rel="stylesheet" href="{% static 'styles/style.css' %}">
 
     <style>
+        /* ===================== ROOT VARIABLES ===================== */
+:root {
+    --blue-color: #38bdf8;
+    --dark-bg: #ffffff; /* CHANGED: from #0a0e14 to white */
+    --card-bg: #f8fafc; /* CHANGED: from #111820 to light gray */
+    --border-color: #e2e8f0; /* CHANGED: from #1f2937 to light border */
+    --text-muted: #64748b; /* CHANGED: from #94a3b8 to darker for contrast */
+    --text-light: #0f172a; /* CHANGED: from #e2e8f0 to dark for readability */
+    --transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ===================== GLOBAL ===================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--dark-bg);
+    color: #0f172a; /* CHANGED: from #ffffff to dark */
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ===================== NAVBAR ===================== */
+.nav-bar {
+    padding: 16px 50px;
+    background: var(--dark-bg);
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+    z-index: 100;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-img {
+    height: 60px;
+    width: auto;
+    filter: brightness(0) saturate(100%) invert(47%) sepia(98%) saturate(2000%) hue-rotate(200deg) brightness(100%);
+}
+
+.logo-text {
+    height: 45px;
+    width: auto;
+}
+
+.menu a {
+    color: var(--text-muted);
+    text-decoration: none;
+    margin: 0 14px;
+    font-weight: 500;
+    font-size: 15px;
+    transition: var(--transition);
+    position: relative;
+}
+
+.menu a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--blue-color);
+    transition: var(--transition);
+}
+
+.menu a:hover {
+    color: #0f172a; /* CHANGED: from #ffffff to dark */
+}
+
+.menu a:hover::after {
+    width: 100%;
+}
+
+.icons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 20px;
+    font-size: 18px;
+}
+
+.search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-bar input {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    padding: 8px 40px 8px 18px;
+    color: #0f172a; /* CHANGED: from #fff to dark */
+    font-size: 14px;
+    width: 180px;
+    transition: var(--transition);
+}
+
+.search-bar input::placeholder {
+    color: var(--text-muted);
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: var(--blue-color);
+    width: 220px;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.1);
+}
+
+.search-bar i {
+    position: absolute;
+    right: 14px;
+    color: var(--text-muted);
+    font-size: 15px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.search-bar i:hover {
+    color: var(--blue-color);
+}
+
+.icons .fa-user,
+.icons .fa-cart-shopping {
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-muted);
+}
+
+.icons .fa-user:hover,
+.icons .fa-cart-shopping:hover {
+    color: var(--blue-color);
+    transform: scale(1.1);
+}
+
+.icons .fa-cart-shopping {
+    position: relative;
+}
+
+.icons .fa-cart-shopping::after {
+    content: '0';
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background: var(--blue-color);
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ===================== HERO ===================== */
+/* 2 სვეტიანი grid: ტექსტი | სურათი. 992px-ზე ქვემოთ — ერთ სვეტად.
+   absolute პოზიციონირება აღარ გვაქვს, ამიტომ ელემენტები ერთმანეთს ვერ გადაფარავს. */
+.main-banner {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    align-items: center;
+    column-gap: clamp(16px, 3vw, 56px);
+    row-gap: 8px;
+    min-height: clamp(440px, calc(100vh - 150px), 720px);
+    min-height: clamp(440px, calc(100svh - 150px), 720px);
+    /* ძალიან განიერ ეკრანზე შიგთავსი 1400px-ზე მეტად არ იწელება */
+    padding: clamp(20px, 4vw, 56px) max(clamp(16px, 5vw, 70px), calc((100% - 1400px) / 2));
+    margin-bottom: clamp(50px, 8vw, 120px);
+    overflow: hidden;
+}
+
+.text-side {
+    position: relative;
+    z-index: 2;
+    min-width: 0;
+    max-width: none;
+    padding: 0;
+    container-type: inline-size;   /* სათაურის ზომა სვეტის სიგანეს მისდევს */
+}
+
+.text-side h1 {
+    margin: 0;
+    font-weight: 800;
+    line-height: 1.12;
+    color: #0f172a;
+    overflow-wrap: break-word;
+    font-size: clamp(28px, 4.2vw, 64px);          /* fallback */
+    font-size: clamp(26px, 8.4cqi, 72px);           /* სვეტის სიგანიდან */
+}
+
+.text-side .highlight {
+    color: var(--blue-color);
+}
+
+.text-side .highlight i {
+    display: inline-block;
+    margin-left: 0.2em;
+    font-size: 0.7em;
+    animation: pawFloat 3s ease-in-out infinite;
+}
+
+.main-banner .premium-btn {
+    margin-top: clamp(20px, 3vw, 40px);
+}
+
+.img-side {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 640px;
+    min-width: 0;
+    justify-self: center;
+    aspect-ratio: 1446 / 1087;          /* dog_and_cat.png-ის პროპორცია */
+    display: grid;
+    place-items: center;
+}
+
+.img-side .color-circle {
+    top: 52%;
+    left: 50%;
+    width: 68%;
+    height: auto;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+}
+
+.img-side .hero-img {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* გრადიენტული წრე (hero + AI სექცია) */
+.color-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #4facfe, #8b5cf6, #6d28d9, #4facfe);
+    background-size: 300% 300%;
+    animation: moveGradient 10s ease-in-out infinite;
+    box-shadow: 0 10px 50px rgba(79, 172, 254, 0.3);
+}
+
+/* ---------- HERO: tablet / phone (ერთ სვეტად) ---------- */
+@media (max-width: 991.98px) {
+    .main-banner {
+        grid-template-columns: minmax(0, 1fr);
+        min-height: 0;
+        row-gap: 4px;
+        padding-top: 24px;
+        padding-bottom: 0;
+        text-align: center;
+    }
+
+    .text-side h1 {
+        font-size: clamp(26px, 6.4vw, 52px);        /* fallback */
+        font-size: clamp(26px, 8.4cqi, 54px);
+    }
+
+    .buttons { justify-content: center; }
+
+    .img-side {
+        width: min(560px, 100%);
+        margin-inline: auto;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .main-banner .premium-btn {
+        width: min(100%, 320px);
+        padding: 14px 24px;
+    }
+}
+
+@keyframes pawFloat {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-8px) rotate(8deg);
+    }
+}
+
+.text-side p {
+    font-size: clamp(16px, 1.2vw, 20px);
+    color: var(--text-muted);
+    max-width: 520px;
+    margin: 20px 0 30px;
+    line-height: 1.7;
+}
+
+.buttons {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.btn-full,
+.btn-empty {
+    padding: 14px 36px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: var(--transition);
+    border: none;
+    letter-spacing: 0.3px;
+}
+
+.btn-full {
+    background: var(--blue-color);
+    color: #000;
+    box-shadow: 0 4px 25px rgba(56, 189, 248, 0.3);
+}
+
+.btn-full:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 40px rgba(56, 189, 248, 0.5);
+    background: #4ac9ff;
+}
+
+.btn-empty {
+    background: transparent;
+    border: 1.5px solid var(--border-color);
+    color: #0f172a; /* CHANGED: from #fff to dark */
+}
+
+.btn-empty:hover {
+    border-color: var(--blue-color);
+    color: var(--blue-color);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 25px rgba(56, 189, 248, 0.15);
+}
+
+.features {
+    display: flex;
+    gap: 40px;
+    margin-top: 50px;
+    flex-wrap: wrap;
+}
+
+.features div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-muted);
+    font-size: 15px;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.features div:hover {
+    color: #0f172a; /* CHANGED: from #fff to dark */
+    transform: translateX(4px);
+}
+
+.features i {
+    color: var(--blue-color);
+    font-size: 18px;
+}
+
+/* ===================== IMG SIDE - FIXED & MERGED ===================== */
+/* ===== HERO IMAGE & CIRCLE ===== */
+@keyframes moveGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    25% {
+        background-position: 100% 0%;
+    }
+    50% {
+        background-position: 100% 100%;
+    }
+    75% {
+        background-position: 0% 100%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* ===================== CATEGORIES ===================== */
+.categories {
+    padding: 20px 0 60px;
+    position: relative;
+    z-index: 2;
+}
+
+.category-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    padding: 18px 20px;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.category-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--blue-color), transparent);
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.category-item:hover {
+    transform: translateY(-8px);
+    border-color: var(--blue-color);
+    box-shadow: 0 12px 40px rgba(56, 189, 248, 0.15);
+}
+
+.category-item:hover::before {
+    opacity: 0.08;
+}
+
+.category-item img {
+    height: 60px;
+    width: 60px;
+    object-fit: contain;
+    position: relative;
+    z-index: 1;
+    transition: var(--transition);
+}
+
+.category-item:hover img {
+    transform: scale(1.1);
+}
+
+.category-item h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-light);
+    position: relative;
+    z-index: 1;
+}
+
+.category-item .fa-plus {
+    font-size: 28px;
+    color: var(--blue-color);
+    position: relative;
+    z-index: 1;
+}
+
+/* ===================== MAP SECTION ===================== */
+.map-section {
+    padding: 100px 0 100px;
+    position: relative;
+    z-index: 2;
+}
+
+.map-header h2 {
+    font-size: clamp(28px, 3vw, 42px);
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #0f172a; /* ADDED: ensures heading is dark */
+}
+
+.map-header p {
+    color: var(--text-muted);
+    font-size: 18px;
+}
+
+.map-card {
+    display: flex;
+    gap: 30px;
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 24px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08); /* CHANGED: lighter shadow for white bg */
+    transition: var(--transition);
+    margin-top: 30px;
+}
+
+.map-card:hover {
+    border-color: rgba(56, 189, 248, 0.2);
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.12); /* CHANGED: lighter shadow */
+}
+
+.map-info {
+    flex: 0 0 35%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.map-info h3 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: #0f172a; /* CHANGED: from #fff to dark */
+}
+
+.map-info p {
+    color: var(--text-muted);
+    margin: 6px 0;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: var(--transition);
+}
+
+.map-info p:hover {
+    color: #0f172a; /* CHANGED: from #fff to dark */
+    transform: translateX(4px);
+}
+
+.map-info i {
+    color: var(--blue-color);
+    width: 20px;
+    font-size: 16px;
+}
+
+.map-info button {
+    margin-top: 25px;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 12px;
+    background: var(--blue-color);
+    color: #000;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: var(--transition);
+    align-self: flex-start;
+    box-shadow: 0 4px 20px rgba(56, 189, 248, 0.25);
+}
+
+.map-info button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 35px rgba(56, 189, 248, 0.4);
+    background: #4ac9ff;
+}
+
+.map-wrapper {
+    flex: 1;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    min-height: 320px;
+}
+
+.map-wrapper iframe {
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    border: 0;
+    display: block;
+}
+
+/* ===================== WOLT SECTION ===================== */
+/* ===================== WOLT SECTION ===================== */
+.wolt {
+    background: #f1f5f9;
+    padding: 100px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.wolt::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 350px;
+    background: var(--blue-color);
+    opacity: 0.12;
+    filter: blur(40px);
+    border-radius: 50%;
+}
+
+.wolt-row {
+    position: relative;
+    z-index: 2;
+    gap: 30px 0;
+}
+
+/* ===== IMAGE ===== */
+.wolt-image-col {
+    flex: 0 0 auto;
+}
+
+.wolt-link {
+    display: inline-block;
+    transition: var(--transition);
+}
+
+.wolt-preview {
+    width: 80%;
+    max-width: 280px;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+    transition: var(--transition);
+    transform: rotate(0deg);
+    border: 2px solid rgba(0, 0, 0, 0.06);
+    display: block;
+    margin: 0 auto;
+}
+
+.wolt-preview:hover {
+    transform: rotate(2deg) scale(1.04);
+    box-shadow: 0 30px 70px rgba(56, 189, 248, 0.2);
+    border-color: var(--blue-color);
+}
+
+/* ===== LOGO ===== */
+.wolt-logo-wrapper {
+    margin-bottom: 16px;
+}
+
+.wolt-logo {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    transition: var(--transition);
+    display: block;
+    margin: 0 auto;
+    filter: brightness(0) saturate(100%) invert(0%) sepia(100%) saturate(0%) hue-rotate(0deg) brightness(100%);
+}
+
+.wolt-logo:hover {
+    transform: scale(1.05) rotate(-2deg);
+}
+
+/* ===== TEXT ===== */
+.wolt-text-col {
+    flex: 0 0 auto;
+    padding: 0 20px;
+}
+
+.wolt-title {
+    color: #0f172a;
+    font-size: clamp(24px, 3vw, 36px);
+    font-weight: bold;
+    font-style: italic;
+    margin: 0 0 16px 0;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    font-family: var(--font-primary);
+}
+
+.wolt-description {
+    color: var(--text-muted);
+    font-size: 16px;
+    line-height: 1.7;
+    max-width: 520px;
+    margin: 0 auto 28px auto;
+    font-family: var(--font-primary);
+    font-weight: bold;
+    font-style: italic;
+}
+
+/* ===== BUTTONS WRAPPER (QR + WOLT LOGO SIDE BY SIDE) ===== */
+.wolt-buttons-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.wolt-button-link {
+    display: inline-block;
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+
+.wolt-button {
+    display: block;
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    transition: var(--transition);
+}
+
+/* QR Code */
+.wolt-qr {
+    height: clamp(110px, 14vw, 150px);
+    width: clamp(110px, 14vw, 150px);
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    padding: 4px;
+    background: white;
+}
+
+
+/* Wolt Logo Button */
+.wolt-logo-btn {
+    height: clamp(110px, 14vw, 150px);
+    width: auto;
+    border-radius: 8px;
+}
+
+
+
+/* ===== WOLT RESPONSIVE ===== */
+@media (max-width: 992px) {
+    .wolt { padding: 60px 0; }
+    .wolt::before { height: 250px; }
+    .wolt-preview { max-width: 240px; }
+    .wolt-logo { max-width: 160px; }
+    .wolt-title { font-size: clamp(22px, 3vw, 30px); }
+    .wolt-description { font-size: 15px; padding: 0 10px; }
+}
+
+@media (max-width: 768px) {
+    /* ტელეფონზე საკუთარ ეკრანზე QR-ს ვერ დაასკანერებ — ვმალავთ,
+       Wolt-ის ღილაკი კი დიდი და მოსახერხებელი რჩება */
+    .wolt-qr-box { display: none; }
+    .wolt-logo-btn { height: 72px; }
+    .wolt-buttons-wrapper { gap: 14px; }
+}
+
+@media (max-width: 576px) {
+    .wolt { padding: 44px 0; }
+    .wolt::before { height: 180px; filter: blur(25px); }
+    .wolt-preview { max-width: 200px; }
+    .wolt-logo { max-width: 130px; }
+    .wolt-title { font-size: 20px; }
+    .wolt-description { font-size: 14px; padding: 0 5px; }
+    .wolt-text-col { padding: 0 12px; }
+}
+
+/* ===================== FIX: PREMIUM BUTTON ===================== */
+.premium-btn {
+    position: relative;
+    overflow: hidden;
+
+    padding: 14px 38px;
+    border: none;
+    border-radius: 8px;
+
+    color: #fff;
+    background: linear-gradient(
+        135deg,
+        #8b35ff 0%,
+        #7020e8 45%,
+        #5a12c9 100%
+    );
+
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+
+    box-shadow:
+        0 5px 0 #43109b,
+        0 9px 18px rgba(104, 28, 220, 0.28);
+
+    transition:
+        transform 0.35s cubic-bezier(.2,.8,.2,1),
+        box-shadow 0.35s ease;
+
+    isolation: isolate;
+    margin-top: 50px;
+    max-width: 100%;
+}
+
+/* ზედა პატარა highlight */
+.premium-btn::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+
+    border-radius: 7px;
+
+    background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.20),
+        rgba(255,255,255,0.03) 45%,
+        transparent 60%
+    );
+
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* სინათლის მოძრავი ზოლი */
+.premium-btn::after {
+    content: "";
+    position: absolute;
+
+    top: -80%;
+    left: -45%;
+
+    width: 45%;
+    height: 260%;
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,0.15),
+        rgba(255,255,255,0.75),
+        rgba(255,255,255,0.15),
+        transparent
+    );
+
+    transform: rotate(20deg) translateX(-180%);
+    filter: blur(2px);
+
+    transition: transform 0.8s cubic-bezier(.16,1,.3,1);
+
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* HOVER */
+.premium-btn:hover {
+    transform: translateY(-5px) scale(1.025);
+
+    box-shadow:
+        0 7px 0 #43109b,
+        0 14px 30px rgba(112, 32, 232, 0.42),
+        0 0 28px rgba(139, 53, 255, 0.28);
+}
+
+/* სინათლე გადადის მთელ ღილაკზე */
+.premium-btn:hover::after {
+    transform: rotate(20deg) translateX(520%);
+}
+
+/* დაჭერის ეფექტი */
+.premium-btn:active {
+    transform: translateY(1px) scale(0.98);
+
+    box-shadow:
+        0 2px 0 #43109b,
+        0 5px 12px rgba(104, 28, 220, 0.25);
+}
+
+/* ===================== FIX: PRODUCT SCROLL SECTION ===================== */
+.product-scroll-section {
+    background: black;
+    overflow: hidden;
+    padding: 14px 0;
+}
+
+.section-header h2 {
+    color: white !important;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.section-header h2 i {
+    color: var(--blue-color);
+    margin-right: 12px;
+}
+
+.section-header p {
+    color: #94a3b8;
+    font-size: 17px;
+}
+
+.product-scroll-wrapper {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.product-scroll-track {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    width: max-content;
+    animation: scrollProducts 30s linear infinite;
+    will-change: transform;
+}
+
+/* მეორე კარუსელი - საპირისპირო მიმართულება */
+.category-scroll-track {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    animation: categoryScroll 15s linear infinite;
+}
+
+@keyframes categoryScroll {
+    from {
+        transform: translateX(-50%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+.product-scroll-track:hover {
+    animation-play-state: paused;
+}
+
+@keyframes scrollProducts {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* ===== PRODUCT CARD ===== */
+.product-card {
+    flex: 0 0 250px;
+    background: #1e293b;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: var(--transition);
+    border: 1px solid #334155;
+}
+
+.product-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: var(--blue-color);
+    box-shadow: 0 12px 40px rgba(56, 189, 248, 0.15);
+}
+
+.product-image {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: var(--transition);
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.08);
+}
+
+.product-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--blue-color);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+}
+
+.product-info {
+    padding: 16px 16px 18px;
+}
+
+.product-info h4 {
+    color: #f1f5f9;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-rating {
+    display: flex;
+    gap: 2px;
+    font-size: 13px;
+    color: #fbbf24;
+    margin-bottom: 8px;
+}
+
+.product-rating .grey-star {
+    color: #475569;
+}
+
+.product-price {
+    color: #f1f5f9;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.product-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.add-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--blue-color);
+    color: #000;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.add-btn:hover {
+    background: #4ac9ff;
+    transform: scale(1.03);
+}
+
+.wishlist-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wishlist-btn:hover {
+    border-color: var(--blue-color);
+    color: var(--blue-color);
+    transform: scale(1.1);
+}
+
+
+
+
+
+
+
+
+
+
+/* ===== BRAND CARDS ===== */
+.brand-card {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 10px;
+}
+
+.brand-image {
+    width: 160px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: 0.3s ease;
+}
+
+.brand-image:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.brand-logo {
+    max-width: 85%;
+    max-height: 75%;
+    object-fit: contain;
+    filter: brightness(0) invert(1) drop-shadow(0 0 6px rgba(255,255,255,0.3));
+    transition: 0.3s ease;
+}
+
+.brand-image:hover .brand-logo {
+    filter: brightness(0) invert(1) drop-shadow(0 0 12px rgba(255,255,255,0.6));
+    transform: scale(1.05);
+}
+
+
+/* =========================================================
+   LOGIN / REGISTER POPUP  (გაერთიანებული, დუბლირების გარეშე)
+========================================================= */
+.login-popup-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    padding: 16px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    background: rgba(15, 55, 95, 0.60);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+    z-index: 99999;
+}
+
+.login-popup-overlay.active {
+    display: flex;
+}
+
+.login-popup {
+    position: relative;
+    width: 900px;
+    max-width: 100%;
+    min-height: 520px;
+    margin: auto;               /* ცენტრში, მაგრამ მაღალ ფორმაზე სქროლი მუშაობს */
+    display: flex;
+    overflow: hidden;
+    border-radius: 28px;
+    background: #fff;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.28);
+    animation: popupOpen 0.35s ease forwards;
+}
+
+@keyframes popupOpen {
+    from { opacity: 0; transform: translateY(25px) scale(0.94); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.popup-close {
+    position: absolute;
+    top: 17px;
+    right: 18px;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 20;
+    transition: all 0.25s ease;
+}
+
+.popup-close:hover {
+    background: rgba(255, 255, 255, 0.45);
+    transform: rotate(90deg);
+}
+
+.popup-left {
+    width: 55%;
+    padding: 50px 55px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: linear-gradient(135deg, #eef8ff 0%, #ffffff 100%);
+}
+
+.popup-icon {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #8B5CF6;
+    color: #fff;
+    font-size: 28px;
+    box-shadow: 0 10px 25px rgba(49, 140, 245, 0.25);
+}
+
+.popup-left h2 {
+    margin: 0 0 25px 0;
+    color: #123c70;
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.auth-tabs {
+    width: 100%;
+    height: 52px;
+    display: flex;
+    margin-bottom: 25px;
+    overflow: hidden;
+    border: 2px solid #a08ea8;
+    border-radius: 14px;
+}
+
+.auth-tab {
+    width: 50%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    color: #8B5CF6;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.auth-tab.active { background: #8B5CF6; color: #fff; }
+.auth-tab:hover:not(.active) { background: #e8f4ff; }
+
+.popup-login-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 17px;
+}
+
+.popup-input {
+    width: 100%;
+    height: 62px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    border: 2px solid #a08ea8;
+    border-radius: 15px;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+
+.popup-input i {
+    width: 32px;
+    color: #287dd5;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.popup-input input {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #183c61;
+    font-size: 16px;            /* 16px+ — iOS-ზე zoom-ს თავიდან ავიცილებთ */
+    font-family: inherit;
+}
+
+.popup-input input::placeholder { color: #8ca3ba; }
+
+.popup-input:focus-within {
+    border-color: #8B5CF6;
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12);
+}
+
+.popup-submit {
+    width: 100%;
+    height: 60px;
+    margin-top: 5px;
+    border: none;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #8B5CF6, #4c3386);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.25);
+    transition: all 0.25s ease;
+}
+
+.popup-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(139, 92, 246, 0.35);
+}
+
+.popup-submit:active { transform: translateY(0); }
+
+.popup-right {
+    width: 45%;
+    position: relative;
+    overflow: hidden;
+    background: #8B5CF6;
+}
+
+.popup-right img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: 90% center;
+}
+
+.popup-right::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(49, 140, 245, 0.15), rgba(20, 100, 190, 0.10));
+    pointer-events: none;
+}
+
+.popup-message {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin: 6px 0;
+    text-align: center;
+    font-weight: 500;
+}
+
+.popup-error   { background: #ffe5e5; color: #c0392b; border: 1px solid #f5b7b1; }
+.popup-success { background: #e8f8ef; color: #27ae60; border: 1px solid #a9dfbf; }
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- POPUP: tablet / phone ---------- */
+@media (max-width: 768px) {
+    .login-popup {
+        flex-direction: column;
+        min-height: 0;
+        border-radius: 22px;
+    }
+    .popup-right {
+        width: 100%;
+        height: 180px;
+        order: -1;
+    }
+    .popup-left {
+        width: 100%;
+        padding: 28px 22px 26px;
+    }
+    .popup-left h2 { font-size: 27px; }
+    .popup-close { background: rgba(0, 0, 0, 0.25); }
+}
+
+@media (max-width: 576px) {
+    .login-popup-overlay { padding: 10px; }
+    .popup-right { height: 120px; }
+    .popup-left { padding: 22px 18px 22px; }
+    .popup-input { height: 56px; padding: 0 16px; }
+    .popup-submit { height: 56px; font-size: 17px; }
+    .auth-tabs { height: 48px; margin-bottom: 18px; }
+    .auth-tab { font-size: 15px; }
+    .popup-login-form { gap: 14px; }
+}
+
+@media (max-width: 420px) {
+    /* ძალიან პატარა ეკრანზე სურათს ვმალავთ, რომ ფორმას მეტი ადგილი დარჩეს */
+    .popup-right { display: none; }
+    .popup-close {
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+        background: rgba(18, 60, 112, 0.10);
+        color: #123c70;
+    }
+    .popup-left { padding-top: 48px; }
+}
+
+.text-side h1 {
+    word-break: break-word;
+}
+
+@media (max-width: 420px) {
+    .main-banner { grid-template-columns: 1fr; text-align: center; padding: 24px 16px 40px; row-gap: 0; margin-bottom: 40px; }
+    .img-side { display: none !important; }
+    .text-side { width: 100%; container-type: normal; }
+    .text-side h1 { font-size: clamp(26px, 8vw, 34px); line-height: 1.25; }
+    .buttons { justify-content: center; margin-top: 4px; }
+    .main-banner .premium-btn { width: min(100%, 300px); margin-top: 28px; padding: 15px 24px; font-size: 16px; }
+}
+/* =========================================================
+   RESPONSIVE: NAVBAR
+========================================================= */
+@media (max-width: 1199.98px) {
+    .nav-bar { padding: 14px 30px; }
+}
+
+@media (max-width: 767.98px) {
+    .nav-bar { padding: 12px 16px; }
+    .logo { gap: 8px; }
+    .logo-img { height: 46px; }
+    .logo-text { height: 32px; }
+}
+
+@media (max-width: 575.98px) {
+    .premium-btn { font-size: 15px; }
+}
+
+/* =========================================================
+   მცირე მოძრაობის მოთხოვნა (accessibility + ბატარეა)
+========================================================= */
+@media (prefers-reduced-motion: reduce) {
+    .product-scroll-track { animation: none; }
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
         /* =================================================================
            ===== 🐾 CUSTOM PAW CURSOR =====
            ================================================================= */
