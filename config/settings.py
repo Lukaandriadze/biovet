@@ -53,13 +53,18 @@ if not SECRET_KEY:
     else:
         raise ImproperlyConfigured('DJANGO_SECRET_KEY არ არის მითითებული (.env ფაილში).')
 
-ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost')
-CSRF_TRUSTED_ORIGINS = env_list('DJANGO_CSRF_TRUSTED_ORIGINS')
-
+SR
+CSRF_TRUSTED_ORIGINS = [
+    "https://biovet.onrender.com",
+]
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-
+ALLOWED_HOSTS = [
+    "biovet.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
 
 # ------------------------------------------------------------------
 # Application definition
