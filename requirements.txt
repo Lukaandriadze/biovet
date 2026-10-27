@@ -3,6 +3,6 @@ django-allauth[socialaccount]
 requests
 pillow
 google-genai
-
+gunicorn
 # მხოლოდ load.py-სთვის (responsive სკრინშოტები):
 # playwright
