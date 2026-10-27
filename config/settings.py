@@ -67,7 +67,7 @@ ALLOWED_HOSTS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://biovet.onrender.com",
+    "https://biovet-ge.onrender.com/",
 ]
 # ------------------------------------------------------------------
 # Application definition
