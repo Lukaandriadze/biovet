@@ -13,7 +13,15 @@ from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+import os
+import json
+import logging
+import urllib.request
+import urllib.error
 
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
 from .models import (
     EmailVerificationCode,
     CODE_LIFETIME_MINUTES,
@@ -57,19 +65,16 @@ def _purge_stale_unverified(username, email):
     stale.delete()
 
 
-
 def _send_code_email(user, code, new=False):
-    import os
-    import urllib.request
-    import urllib.error
-
     api_key = os.environ.get("RESEND_API_KEY")
+
     if not api_key:
-        raise RuntimeError("RESEND_API_KEY არ არის მითითებული.")
+        logger.error("RESEND_API_KEY is missing in environment variables.")
+        raise RuntimeError("ელფოსტის სერვისი გამართული არ არის.")
 
     sender = os.environ.get(
         "EMAIL_FROM",
-        settings.DEFAULT_FROM_EMAIL,
+        "Biovet <onboarding@resend.dev>"
     )
 
     title = (
@@ -81,9 +86,9 @@ def _send_code_email(user, code, new=False):
     message = (
         f"გამარჯობა {user.username}!\n\n"
         f"{title}:\n\n"
-        f"    {code}\n\n"
-        "შეიყვანე ეს კოდი საიტზე რეგისტრაციის დასასრულებლად.\n\n"
-        f"კოდი ვალიდურია {CODE_LIFETIME_MINUTES} წუთი.\n\n"
+        f"{code}\n\n"
+        "შეიყვანე ეს კოდი Biovet-ზე რეგისტრაციის დასასრულებლად.\n\n"
+        f"კოდი ვალიდურია {CODE_LIFETIME_MINUTES} წუთის განმავლობაში.\n\n"
         "Biovet"
     )
 
@@ -105,30 +110,39 @@ def _send_code_email(user, code, new=False):
     )
 
     try:
-        with urllib.request.urlopen(request, timeout=8) as response:
-            result = json.loads(response.read().decode("utf-8"))
+        with urllib.request.urlopen(request, timeout=15) as response:
+            result = json.loads(
+                response.read().decode("utf-8")
+            )
 
         if not result.get("id"):
-            raise RuntimeError("ელფოსტის API-მ გაგზავნა არ დაადასტურა.")
+            logger.error("Resend response did not contain an email ID.")
+            raise RuntimeError("ელფოსტის გაგზავნა ვერ დადასტურდა.")
 
         logger.info(
-            "Verification email accepted by provider for user=%s",
-            user.username,
+            "Verification email accepted by Resend for %s",
+            user.email
         )
 
     except urllib.error.HTTPError as error:
-        details = error.read().decode("utf-8", errors="replace")
-        logger.error(
-            "Email API returned HTTP %s: %s",
-            error.code,
-            details[:1000],
+        details = error.read().decode(
+            "utf-8",
+            errors="replace"
         )
+
+        logger.error(
+            "Resend HTTP error %s: %s",
+            error.code,
+            details[:1000]
+        )
+
         raise RuntimeError(
-            f"ელფოსტის სერვისმა HTTP {error.code} შეცდომა დააბრუნა."
+            "ელფოსტის სერვისმა შეცდომა დააბრუნა."
         ) from error
 
     except (urllib.error.URLError, TimeoutError) as error:
-        logger.error("Email API connection failed: %s", error)
+        logger.error("Resend connection error: %s", error)
+
         raise RuntimeError(
             "ელფოსტის სერვისთან კავშირი ვერ დამყარდა."
         ) from error
