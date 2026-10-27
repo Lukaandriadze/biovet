@@ -61,7 +61,7 @@ if not DEBUG:
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 ALLOWED_HOSTS = [
-    "biovet.onrender.com",
+    "https://biovet-ge.onrender.com/",
     "localhost",
     "127.0.0.1",
 ]
