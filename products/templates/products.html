@@ -1520,7 +1520,7 @@
         {% if user.is_authenticated %}
             <a href="{% url 'profile' %}" class="profile-user">
                 <i class="fa-solid fa-user"></i>
-                <span>{{ user.username }}</span>
+                <span>{{ user.first_name|default:user.username }}</span>
             </a>
 
             <div class="Cart" id="cartToggle" role="button" tabindex="0" aria-label="კალათა">

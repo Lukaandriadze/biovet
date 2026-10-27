@@ -1,36 +1,21 @@
 # User/views.py
 import json
 import logging
-import secrets
-from datetime import timedelta
+import re
 
-from django.conf import settings
 from django.contrib.auth import authenticate, login, logout as auth_logout
 from django.contrib.auth.models import User
-from django.core.mail import send_mail
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.http import JsonResponse
 from django.shortcuts import redirect
-from django.utils import timezone
 from django.views.decorators.http import require_POST
-import os
-import json
-import logging
-import urllib.request
-import urllib.error
 
-from django.conf import settings
-
-logger = logging.getLogger(__name__)
-from .models import (
-    EmailVerificationCode,
-    CODE_LIFETIME_MINUTES,
-    RESEND_COOLDOWN_SECONDS,
-)
+from products.models import Profile
 
 logger = logging.getLogger(__name__)
 
 PRODUCTS_URL = '/product/'
+AUTH_BACKEND = 'django.contrib.auth.backends.ModelBackend'
 
 
 # =====================================================================
@@ -50,152 +35,82 @@ def _json_error(message, status=400):
     return JsonResponse({'success': False, 'message': message}, status=status)
 
 
-def _purge_stale_unverified(username, email):
+def normalize_phone(raw):
     """
-    წაშლის ძველ, ვერიფიცირების გარეშე დარჩენილ ანგარიშებს (არასდროს შესულა
-    და კოდის ვადა გასულია), რათა username/email სამუდამოდ არ დაიკავოს.
+    ტელეფონს აჰყავს ერთ ფორმატზე: 9 ციფრი (მაგ. 599123456).
+    იღებს: "599 12 34 56", "+995 599 123 456", "0599123456", "995599123456".
     """
-    cutoff = timezone.now() - timedelta(minutes=CODE_LIFETIME_MINUTES)
-    stale = User.objects.filter(
-        is_active=False,
-        last_login__isnull=True,
-        date_joined__lt=cutoff,
-    )
-    stale = stale.filter(username=username) | stale.filter(email__iexact=email)
-    stale.delete()
+    digits = re.sub(r'\D', '', str(raw or ''))
+    if len(digits) == 12 and digits.startswith('995'):
+        digits = digits[3:]
+    elif len(digits) == 10 and digits.startswith('0'):
+        digits = digits[1:]
+    return digits
 
 
-def _send_code_email(user, code, new=False):
-    api_key = os.environ.get("RESEND_API_KEY")
+def is_valid_phone(digits):
+    # ქართული მობილური: 9 ციფრი, იწყება 5-ით
+    return len(digits) == 9 and digits.startswith('5')
 
-    if not api_key:
-        logger.error("RESEND_API_KEY is missing in environment variables.")
-        raise RuntimeError("ელფოსტის სერვისი გამართული არ არის.")
-
-    sender = os.environ.get(
-        "EMAIL_FROM",
-        "Biovet <onboarding@resend.dev>"
-    )
-
-    title = (
-        "შენი ახალი ვერიფიკაციის კოდია"
-        if new
-        else "შენი ვერიფიკაციის კოდია"
-    )
-
-    message = (
-        f"გამარჯობა {user.username}!\n\n"
-        f"{title}:\n\n"
-        f"{code}\n\n"
-        "შეიყვანე ეს კოდი Biovet-ზე რეგისტრაციის დასასრულებლად.\n\n"
-        f"კოდი ვალიდურია {CODE_LIFETIME_MINUTES} წუთის განმავლობაში.\n\n"
-        "Biovet"
-    )
-
-    payload = {
-        "from": sender,
-        "to": [user.email],
-        "subject": "ვერიფიკაციის კოდი — Biovet",
-        "text": message,
-    }
-
-    request = urllib.request.Request(
-        "https://api.resend.com/emails",
-        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-            "User-Agent": "Biovet-Django/1.0 (email verification)",
-        },
-        method="POST",
-    )
-
-    try:
-        with urllib.request.urlopen(request, timeout=15) as response:
-            result = json.loads(
-                response.read().decode("utf-8")
-            )
-
-        if not result.get("id"):
-            logger.error("Resend response did not contain an email ID.")
-            raise RuntimeError("ელფოსტის გაგზავნა ვერ დადასტურდა.")
-
-        logger.info(
-            "Verification email accepted by Resend for %s",
-            user.email
-        )
-
-    except urllib.error.HTTPError as error:
-        details = error.read().decode(
-            "utf-8",
-            errors="replace"
-        )
-
-        logger.error(
-            "Resend HTTP error %s: %s",
-            error.code,
-            details[:1000]
-        )
-
-        raise RuntimeError(
-            "ელფოსტის სერვისმა შეცდომა დააბრუნა."
-        ) from error
-
-    except (urllib.error.URLError, TimeoutError) as error:
-        logger.error("Resend connection error: %s", error)
-
-        raise RuntimeError(
-            "ელფოსტის სერვისთან კავშირი ვერ დამყარდა."
-        ) from error
 
 # =====================================================================
-# LOGIN
+# LOGIN  (ტელეფონი + პაროლი)
 # =====================================================================
 @require_POST
 def ajax_login(request):
     data = _read_data(request)
 
-    username = str(data.get('username', '')).strip()
+    # ველის სახელი "username" დარჩა, რომ ფრონტი/ძველი კლიენტები არ გაფუჭდეს;
+    # მასში ახლა ტელეფონის ნომერი იწერება.
+    identifier = str(data.get('username') or data.get('phone') or '').strip()
     password = str(data.get('password', ''))
 
-    if not username or not password:
+    if not identifier or not password:
         return _json_error('გთხოვთ შეავსოთ ყველა ველი')
 
-    user = authenticate(request, username=username, password=password)
+    # 1) ტელეფონით (ახალი რეგისტრაციები)
+    candidates = []
+    phone = normalize_phone(identifier)
+    if is_valid_phone(phone):
+        candidates.append(phone)
+    # 2) როგორც ეწერა (ძველი ანგარიშები, რომლებსაც username აქვთ)
+    if identifier not in candidates:
+        candidates.append(identifier)
 
-    if user is not None:
-        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-        return JsonResponse({
-            'success': True,
-            'message': 'წარმატებით შეხვედით!',
-            'redirect': PRODUCTS_URL,
-        })
+    for candidate in candidates:
+        user = authenticate(request, username=candidate, password=password)
+        if user is not None:
+            login(request, user, backend=AUTH_BACKEND)
+            return JsonResponse({
+                'success': True,
+                'message': 'წარმატებით შეხვედით!',
+                'redirect': PRODUCTS_URL,
+            })
 
-    # user არსებობს, მაგრამ ჯერ არ დაუდასტურებია ემაილი
-    try:
-        u = User.objects.get(username=username)
-        if not u.is_active and u.check_password(password):
-            return _json_error('გთხოვთ ჯერ დაადასტუროთ ემაილი')
-    except User.DoesNotExist:
-        pass
-
-    return _json_error('მომხმარებლის სახელი ან პაროლი არასწორია')
+    return _json_error('ტელეფონის ნომერი ან პაროლი არასწორია')
 
 
 # =====================================================================
-# REGISTER
+# REGISTER  (სახელი, გვარი, ტელეფონი, პაროლი)
 # =====================================================================
 @require_POST
 def ajax_register(request):
     data = _read_data(request)
 
-    username = str(data.get('username', '')).strip()
-    email = str(data.get('email', '')).strip()
+    first_name = str(data.get('first_name', '')).strip()
+    last_name = str(data.get('last_name', '')).strip()
+    phone = normalize_phone(data.get('phone', ''))
     password = str(data.get('password', ''))
     password_confirm = str(data.get('password_confirm', ''))
 
-    if not all([username, email, password, password_confirm]):
+    if not all([first_name, last_name, phone, password, password_confirm]):
         return _json_error('გთხოვთ შეავსოთ ყველა ველი')
+
+    if len(first_name) > 100 or len(last_name) > 100:
+        return _json_error('სახელი ან გვარი ძალიან გრძელია')
+
+    if not is_valid_phone(phone):
+        return _json_error('შეიყვანეთ სწორი ტელეფონის ნომერი (მაგ. 599 123 456)')
 
     if password != password_confirm:
         return _json_error('პაროლები არ ემთხვევა')
@@ -203,122 +118,40 @@ def ajax_register(request):
     if len(password) < 6:
         return _json_error('პაროლი უნდა იყოს მინიმუმ 6 სიმბოლო')
 
-    _purge_stale_unverified(username, email)
+    # ტელეფონი = მომხმარებლის უნიკალური ლოგინი
+    if User.objects.filter(username=phone).exists():
+        return _json_error('ამ ტელეფონის ნომრით უკვე არსებობს ანგარიში')
 
-    if User.objects.filter(username=username).exists():
-        return _json_error('ეს მომხმარებლის სახელი უკვე დაკავებულია')
-
-    if User.objects.filter(email__iexact=email).exists():
-        return _json_error('ეს ელ.ფოსტა უკვე რეგისტრირებულია')
-
-    user = None
     try:
         with transaction.atomic():
             user = User.objects.create_user(
-                username=username,
-                email=email,
+                username=phone,
                 password=password,
-                is_active=False,
+                first_name=first_name,
+                last_name=last_name,
             )
-            code = EmailVerificationCode.generate_code()
-            EmailVerificationCode.objects.create(user=user, code=code)
-            # თუ მეილი ვერ გაიგზავნა, exception transaction-ს დააბრუნებს
-            _send_code_email(user, code)
+            Profile.objects.update_or_create(
+                user=user,
+                defaults={
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'phone': phone,
+                },
+            )
+    except IntegrityError:
+        # ორმა ადამიანმა ერთდროულად სცადა ერთი და იგივე ნომრით
+        return _json_error('ამ ტელეფონის ნომრით უკვე არსებობს ანგარიში')
     except Exception:
-        logger.exception('Registration failed for username=%s', username)
-        return _json_error(
-            'რეგისტრაცია ვერ დასრულდა. სცადეთ მოგვიანებით.', status=500
-        )
+        logger.exception('Registration failed for phone=%s', phone)
+        return _json_error('რეგისტრაცია ვერ დასრულდა. სცადეთ მოგვიანებით.', status=500)
+
+    # დადასტურების გარეშე — რეგისტრაციისთანავე შედის
+    login(request, user, backend=AUTH_BACKEND)
 
     return JsonResponse({
         'success': True,
-        'message': 'კოდი გამოგზავნილია ემაილზე!',
-        'username': username,
-        'redirect': None,
-    })
-
-
-# =====================================================================
-# VERIFY CODE
-# =====================================================================
-@require_POST
-def ajax_verify_code(request):
-    data = _read_data(request)
-
-    username = str(data.get('username', '')).strip()
-    code = str(data.get('code', '')).strip()
-
-    if not username or not code:
-        return _json_error('შეიყვანეთ კოდი')
-
-    try:
-        user = User.objects.get(username=username)
-        verification = EmailVerificationCode.objects.get(user=user)
-    except (User.DoesNotExist, EmailVerificationCode.DoesNotExist):
-        return _json_error('კოდი ვერ მოიძებნა. გთხოვთ მოითხოვოთ ახალი კოდი ან თავიდან დარეგისტრირდეთ.')
-
-    if verification.is_expired():
-        verification.delete()
-        return _json_error('კოდის ვადა ამოიწურა. მოითხოვეთ ახალი კოდი.')
-
-    if verification.is_locked():
-        return _json_error('ძალიან ბევრი არასწორი ცდა. მოითხოვეთ ახალი კოდი.', status=429)
-
-    if not secrets.compare_digest(verification.code, code):
-        verification.attempts += 1
-        verification.save(update_fields=['attempts'])
-        return _json_error('არასწორი კოდი. სცადეთ ხელახლა.')
-
-    try:
-        with transaction.atomic():
-            user.is_active = True
-            user.save(update_fields=['is_active'])
-            verification.delete()
-        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-    except Exception:
-        logger.exception('Verification failed for username=%s', username)
-        return _json_error('ვერიფიკაცია ვერ დასრულდა. სცადეთ მოგვიანებით.', status=500)
-
-    return JsonResponse({
-        'success': True,
-        'message': 'ემაილი დადასტურდა!',
+        'message': 'რეგისტრაცია წარმატებით დასრულდა!',
         'redirect': PRODUCTS_URL,
-    })
-
-
-# =====================================================================
-# RESEND CODE
-# =====================================================================
-@require_POST
-def ajax_resend_code(request):
-    data = _read_data(request)
-    username = str(data.get('username', '')).strip()
-
-    try:
-        user = User.objects.get(username=username, is_active=False)
-    except User.DoesNotExist:
-        return _json_error('მომხმარებელი ვერ მოიძებნა')
-
-    existing = EmailVerificationCode.objects.filter(user=user).first()
-    if existing and not existing.can_resend():
-        return _json_error(
-            f'ახალი კოდის მოთხოვნა შესაძლებელია {RESEND_COOLDOWN_SECONDS} წამში ერთხელ.',
-            status=429,
-        )
-
-    try:
-        with transaction.atomic():
-            EmailVerificationCode.objects.filter(user=user).delete()
-            code = EmailVerificationCode.generate_code()
-            EmailVerificationCode.objects.create(user=user, code=code)
-            _send_code_email(user, code, new=True)
-    except Exception:
-        logger.exception('Resend code failed for username=%s', username)
-        return _json_error('კოდის გაგზავნა ვერ მოხერხდა. სცადეთ მოგვიანებით.', status=500)
-
-    return JsonResponse({
-        'success': True,
-        'message': 'ახალი კოდი გამოგზავნილია!',
     })
 
 

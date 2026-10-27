@@ -191,21 +191,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # ------------------------------------------------------------------
-# Email
-# ------------------------------------------------------------------
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')   # Gmail App Password
-DEFAULT_FROM_EMAIL = os.environ.get(
-    'DEFAULT_FROM_EMAIL',
-    f'Biovet <{EMAIL_HOST_USER}>' if EMAIL_HOST_USER else 'Biovet <no-reply@localhost>',
-)
-
-
-# ------------------------------------------------------------------
 # Telegram / Gemini
 # ------------------------------------------------------------------
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
