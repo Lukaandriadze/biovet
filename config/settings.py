@@ -58,14 +58,16 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 ALLOWED_HOSTS = [
     "biovet-ge.onrender.com",
     "localhost",
     "127.0.0.1",
 ]
-
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 CSRF_TRUSTED_ORIGINS = [
     "https://biovet-ge.onrender.com",
 ]
