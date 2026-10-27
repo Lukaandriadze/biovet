@@ -57,24 +57,81 @@ def _purge_stale_unverified(username, email):
     stale.delete()
 
 
+
 def _send_code_email(user, code, new=False):
-    title = 'შენი ახალი ვერიფიკაციის კოდია' if new else 'შენი ვერიფიკაციის კოდია'
-    message = (
-        f'გამარჯობა {user.username}!\n\n'
-        f'{title}:\n\n'
-        f'    {code}\n\n'
-        f'შეიყვანე ეს კოდი საიტზე რეგისტრაციის დასასრულებლად.\n\n'
-        f'კოდი ვალიდურია {CODE_LIFETIME_MINUTES} წუთი.\n\n'
-        f'Biovet\n'
-    )
-    send_mail(
-        'ვერიფიკაციის კოდი — Biovet',
-        message,
+    import os
+    import urllib.request
+    import urllib.error
+
+    api_key = os.environ.get("RESEND_API_KEY")
+    if not api_key:
+        raise RuntimeError("RESEND_API_KEY არ არის მითითებული.")
+
+    sender = os.environ.get(
+        "EMAIL_FROM",
         settings.DEFAULT_FROM_EMAIL,
-        [user.email],
-        fail_silently=False,
     )
 
+    title = (
+        "შენი ახალი ვერიფიკაციის კოდია"
+        if new
+        else "შენი ვერიფიკაციის კოდია"
+    )
+
+    message = (
+        f"გამარჯობა {user.username}!\n\n"
+        f"{title}:\n\n"
+        f"    {code}\n\n"
+        "შეიყვანე ეს კოდი საიტზე რეგისტრაციის დასასრულებლად.\n\n"
+        f"კოდი ვალიდურია {CODE_LIFETIME_MINUTES} წუთი.\n\n"
+        "Biovet"
+    )
+
+    payload = {
+        "from": sender,
+        "to": [user.email],
+        "subject": "ვერიფიკაციის კოდი — Biovet",
+        "text": message,
+    }
+
+    request = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=8) as response:
+            result = json.loads(response.read().decode("utf-8"))
+
+        if not result.get("id"):
+            raise RuntimeError("ელფოსტის API-მ გაგზავნა არ დაადასტურა.")
+
+        logger.info(
+            "Verification email accepted by provider for user=%s",
+            user.username,
+        )
+
+    except urllib.error.HTTPError as error:
+        details = error.read().decode("utf-8", errors="replace")
+        logger.error(
+            "Email API returned HTTP %s: %s",
+            error.code,
+            details[:1000],
+        )
+        raise RuntimeError(
+            f"ელფოსტის სერვისმა HTTP {error.code} შეცდომა დააბრუნა."
+        ) from error
+
+    except (urllib.error.URLError, TimeoutError) as error:
+        logger.error("Email API connection failed: %s", error)
+        raise RuntimeError(
+            "ელფოსტის სერვისთან კავშირი ვერ დამყარდა."
+        ) from error
 
 # =====================================================================
 # LOGIN
