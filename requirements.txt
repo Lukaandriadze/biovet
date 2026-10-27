@@ -1,0 +1,8 @@
+Django>=5.2,<5.3
+django-allauth[socialaccount]
+requests
+pillow
+google-genai
+
+# მხოლოდ load.py-სთვის (responsive სკრინშოტები):
+# playwright

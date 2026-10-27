@@ -1,0 +1,358 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>პროფილი · Biovet</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, sans-serif; }
+        :root { --dark-bg: #0b0e14; --purple-main: #8b35ff; --purple-deep: #7020e8; --purple-shadow: #43109b; }
+        body { background: #faf8ff; color: #1a1a2e; min-height: 100vh; padding: 0 0 60px; }
+
+        .nav-bar { padding: 16px 50px; background: var(--dark-bg); border-bottom: 1px solid rgba(139, 53, 255, 0.2); position: sticky; top: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; }
+        .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-img { height: 60px; width: auto; filter: brightness(0) saturate(100%) invert(47%) sepia(98%) saturate(2000%) hue-rotate(200deg) brightness(100%); }
+        .logo-text { height: 45px; width: auto; }
+        .nav-right { display: flex; align-items: center; gap: 14px; }
+        .nav-link { color: #c4b5fd; text-decoration: none; font-weight: 600; padding: 8px 18px; border-radius: 30px; background: rgba(139, 53, 255, 0.15); border: 1px solid rgba(139, 53, 255, 0.3); font-size: 14px; transition: all 0.3s; display: flex; align-items: center; gap: 8px; }
+        .nav-link:hover { background: rgba(139, 53, 255, 0.3); color: white; transform: translateY(-2px); }
+        .logout-btn { color: #ffb3b3; text-decoration: none; font-weight: 600; padding: 8px 18px; border-radius: 30px; background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.3); font-size: 14px; transition: all 0.3s; }
+        .logout-btn:hover { background: rgba(220, 38, 38, 0.25); color: white; }
+
+        .profile-container { max-width: 1000px; margin: 40px auto; padding: 0 24px; }
+        .page-title { font-size: 34px; font-weight: 800; color: #2d1b4e; margin-bottom: 30px; display: flex; align-items: center; gap: 14px; }
+        .page-title i { color: #8b35ff; }
+
+        .section { background: #ffffff; border-radius: 24px; padding: 30px; border: 1px solid rgba(139, 53, 255, 0.15); box-shadow: 0 6px 0 #e9e0ff, 0 12px 30px rgba(104, 28, 220, 0.1); margin-bottom: 30px; animation: fadeInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .section-title { font-size: 20px; font-weight: 800; color: #2d1b4e; margin-bottom: 22px; display: flex; align-items: center; gap: 10px; padding-bottom: 14px; border-bottom: 2px dashed rgba(139, 53, 255, 0.2); }
+        .section-title i { color: #8b35ff; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 13px; font-weight: 700; color: #4a3a6a; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+        .form-group label i { color: #8b35ff; font-size: 12px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 13px 16px; border: 2px solid rgba(139, 53, 255, 0.2); border-radius: 12px; font-size: 15px; font-family: inherit; color: #2d1b4e; background: #faf8ff; transition: all 0.3s; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #8b35ff; background: #ffffff; box-shadow: 0 0 0 4px rgba(139, 53, 255, 0.12); }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+
+        .save-btn { margin-top: 10px; padding: 14px 32px; background: linear-gradient(135deg, #8b35ff 0%, #7020e8 50%, #5a12c9 100%); color: #fff; border: none; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 5px 0 #43109b, 0 10px 24px rgba(139, 53, 255, 0.35); transition: transform 0.3s, box-shadow 0.3s; font-family: inherit; display: inline-flex; align-items: center; gap: 10px; }
+        .save-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 0 #43109b, 0 14px 30px rgba(139, 53, 255, 0.5); }
+
+        .order-card { background: #faf8ff; border: 1px solid rgba(139, 53, 255, 0.15); border-radius: 18px; padding: 20px; margin-bottom: 18px; transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; animation: fadeInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+        .order-card:hover { transform: translateY(-3px); border-color: rgba(139, 53, 255, 0.4); box-shadow: 0 8px 20px rgba(139, 53, 255, 0.12); }
+        .order-card:last-child { margin-bottom: 0; }
+
+        .order-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 16px; border-bottom: 2px dashed rgba(139, 53, 255, 0.2); margin-bottom: 16px; flex-wrap: wrap; }
+        .order-card-number { font-size: 22px; font-weight: 800; color: #43109b; display: flex; align-items: center; gap: 8px; }
+        .order-card-number i { color: #8b35ff; font-size: 18px; }
+        .order-card-date { font-size: 13px; color: #8b7ba8; font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+        .order-card-date i { color: #8b35ff; font-size: 12px; }
+        .order-card-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+
+        .order-status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 30px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; transition: transform 0.3s; }
+        .status-pending { background: rgba(251, 191, 36, 0.15); color: #d97706; border: 1px solid rgba(251, 191, 36, 0.4); }
+        .status-confirmed { background: rgba(59, 130, 246, 0.15); color: #2563eb; border: 1px solid rgba(59, 130, 246, 0.4); }
+        .status-shipped { background: rgba(139, 53, 255, 0.15); color: #7020e8; border: 1px solid rgba(139, 53, 255, 0.4); }
+        .status-delivered { background: rgba(34, 197, 94, 0.15); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.4); }
+        .status-cancelled { background: rgba(220, 38, 38, 0.15); color: #dc2626; border: 1px solid rgba(220, 38, 38, 0.4); }
+        .status-out_of_stock { background: rgba(251, 146, 60, 0.15); color: #ea580c; border: 1px solid rgba(251, 146, 60, 0.4); }
+        .status-packing { background: rgba(168, 85, 247, 0.15); color: #9333ea; border: 1px solid rgba(168, 85, 247, 0.4); }
+
+        .order-card-total { font-size: 22px; font-weight: 800; color: #43109b; }
+
+        .order-items { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+        .order-item { display: flex; gap: 12px; padding: 10px; background: #ffffff; border-radius: 12px; border: 1px solid rgba(139, 53, 255, 0.1); align-items: center; }
+        .order-item-img { width: 50px; height: 50px; border-radius: 10px; background: #f0e8ff; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; border: 1px solid rgba(139, 53, 255, 0.15); }
+        .order-item-img img { width: 100%; height: 100%; object-fit: cover; }
+        .order-item-img i { font-size: 20px; color: #8b35ff; }
+        .order-item-info { flex: 1; min-width: 0; }
+        .order-item-name { font-size: 14px; font-weight: 700; color: #2d1b4e; line-height: 1.3; margin-bottom: 2px; }
+        .order-item-qty { font-size: 12px; color: #8b7ba8; font-weight: 600; }
+        .order-item-price { font-size: 15px; font-weight: 800; color: #43109b; white-space: nowrap; }
+
+        .order-card-footer { display: flex; flex-wrap: wrap; gap: 12px; padding-top: 14px; border-top: 2px dashed rgba(139, 53, 255, 0.2); }
+        .order-card-info { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #5c4b7e; font-weight: 600; background: #ffffff; padding: 6px 12px; border-radius: 30px; border: 1px solid rgba(139, 53, 255, 0.15); }
+        .order-card-info i { color: #8b35ff; font-size: 12px; }
+
+        .orders-empty { text-align: center; padding: 50px 20px; color: #7a6b9e; }
+        .orders-empty i { font-size: 64px; color: #c4b5fd; margin-bottom: 20px; display: block; animation: floatIcon 3.2s ease-in-out infinite; }
+        @keyframes floatIcon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        .orders-empty p { font-size: 18px; font-weight: 600; color: #4a3a6a; margin-bottom: 20px; }
+        .orders-empty a { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; background: linear-gradient(135deg, #8b35ff, #5a12c9); color: white; border-radius: 14px; text-decoration: none; font-weight: 700; box-shadow: 0 4px 0 #43109b, 0 8px 20px rgba(139, 53, 255, 0.35); transition: transform 0.3s; }
+        .orders-empty a:hover { transform: translateY(-3px); }
+
+        @media (max-width: 768px) {
+            .nav-bar { padding: 16px 20px; }
+            .logo-img { height: 44px; }
+            .logo-text { height: 32px; }
+            .nav-link span { display: none; }
+            .logout-btn { padding: 6px 12px; font-size: 12px; }
+            .profile-container { margin: 20px auto; padding: 0 16px; }
+            .page-title { font-size: 24px; }
+            .section { padding: 20px; border-radius: 18px; }
+            .form-row { grid-template-columns: 1fr; }
+            .order-card-header { flex-direction: column; align-items: flex-start; }
+            .order-card-right { align-items: flex-start; text-align: left; }
+            .order-card-number { font-size: 18px; }
+            .order-card-total { font-size: 18px; }
+        }
+    
+        /* =================================================================
+           ===== RESPONSIVE AUDIT FIXES (additive, no redesign) =====
+           ================================================================= */
+        body { overflow-x: hidden; overflow-x: clip; }
+        img { max-width: 100%; }
+        .nav-bar { gap: 12px; }
+        .logo { min-width: 0; }
+        .nav-right { flex-shrink: 0; }
+        .nav-link, .logout-btn { white-space: nowrap; }
+        .page-title { flex-wrap: wrap; overflow-wrap: anywhere; }
+        .form-row > .form-group { min-width: 0; }
+        .order-item-name { overflow-wrap: anywhere; }
+        .order-card-info { max-width: 100%; overflow-wrap: anywhere; }
+        .order-card-header > div { min-width: 0; }
+
+        @media (max-width: 768px) {
+            .save-btn { width: 100%; justify-content: center; }
+        }
+
+        @media (max-width: 480px) {
+            .nav-bar { padding: 12px 14px; }
+            .logo { gap: 8px; }
+            .logo-img { height: 36px; }
+            .logo-text { height: 26px; }
+            .nav-right { gap: 8px; }
+            .nav-link { padding: 8px 12px; }
+            .logout-btn { padding: 6px 10px; }
+            .profile-container { padding: 0 10px; }
+            .page-title { font-size: 21px; gap: 10px; margin-bottom: 20px; }
+            .section { padding: 16px; margin-bottom: 20px; }
+            .section-title { font-size: 17px; }
+            .order-card { padding: 14px; }
+            .order-item { gap: 10px; padding: 8px; }
+            .order-card-footer { gap: 8px; }
+            .orders-empty { padding: 36px 10px; }
+            .orders-empty p { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav-bar">
+    <a href="{% url 'products' %}" class="logo">
+        <img src="{% static 'images/biovet.png' %}" class="logo-img" alt="Biovet">
+        <img src="{% static 'images/ბიოვეტი.png' %}" class="logo-text" alt="Biovet">
+    </a>
+    <div class="nav-right">
+        <a href="{% url 'products' %}" class="nav-link">
+            <i class="fa-solid fa-paw"></i>
+            <span>კატალოგი</span>
+        </a>
+        <a href="{% url 'logout' %}" class="logout-btn">გასვლა</a>
+    </div>
+</nav>
+
+<div class="profile-container">
+    <h1 class="page-title">
+        <i class="fa-solid fa-user"></i>
+        ჩემი პროფილი
+    </h1>
+
+    <div class="section">
+        <h2 class="section-title">
+            <i class="fa-solid fa-user-pen"></i>
+            პირადი ინფორმაცია
+        </h2>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first_name">
+                        <i class="fa-solid fa-user"></i> სახელი
+                    </label>
+                    <input type="text" id="first_name" name="first_name"
+                           value="{{ profile.first_name }}" placeholder="შეიყვანე სახელი">
+                </div>
+                <div class="form-group">
+                    <label for="last_name">
+                        <i class="fa-solid fa-user"></i> გვარი
+                    </label>
+                    <input type="text" id="last_name" name="last_name"
+                           value="{{ profile.last_name }}" placeholder="შეიყვანე გვარი">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="phone">
+                        <i class="fa-solid fa-phone"></i> ტელეფონი
+                    </label>
+                    <input type="tel" id="phone" name="phone"
+                           value="{{ profile.phone }}" placeholder="+995 5XX XXX XXX">
+                </div>
+                <div class="form-group">
+                    <label for="address">
+                        <i class="fa-solid fa-location-dot"></i> მისამართი
+                    </label>
+                    <input type="text" id="address" name="address"
+                           value="{{ profile.address }}" placeholder="ქალაქი, ქუჩა, კორპუსი">
+                </div>
+            </div>
+
+            <button type="submit" class="save-btn">
+                <i class="fa-solid fa-floppy-disk"></i>
+                შენახვა
+            </button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">
+            <i class="fa-solid fa-receipt"></i>
+            ჩემი შეკვეთები
+        </h2>
+
+        {% if orders %}
+            {% for order in orders %}
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <div>
+                            <div class="order-card-number">
+                                <i class="fa-solid fa-receipt"></i>
+                                შეკვეთა #{{ order.user_order_number }}
+                            </div>
+                            <div class="order-card-date">
+                                <i class="fa-solid fa-calendar"></i>
+                                {{ order.created_at|date:"d.m.Y H:i" }}
+                            </div>
+                        </div>
+                        <div class="order-card-right">
+                            <div class="order-status-badge status-{{ order.status }}"
+                                 data-order-id="{{ order.id }}"
+                                 data-status="{{ order.status }}">
+                                {{ order.get_status_display }}
+                            </div>
+                            <div class="order-card-total">₾ {{ order.total }}</div>
+                        </div>
+                    </div>
+
+                    <div class="order-items">
+                        {% for item in order.items.all %}
+                            <div class="order-item">
+                                <div class="order-item-img">
+                                    {% if item.product and item.product.img %}
+                                        <img src="{{ item.product.img }}" alt="{{ item.product_name }}"
+                                             onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fa-solid fa-paw\'></i>';">
+                                    {% else %}
+                                        <i class="fa-solid fa-paw"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="order-item-info">
+                                    <div class="order-item-name">{{ item.product_name }}</div>
+                                    <div class="order-item-qty">× {{ item.quantity }}</div>
+                                </div>
+                                <div class="order-item-price">₾ {{ item.total_price }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="order-card-footer">
+                        <div class="order-card-info">
+                            <i class="fa-solid fa-user"></i>
+                            {{ order.first_name }} {{ order.last_name }}
+                        </div>
+                        <div class="order-card-info">
+                            <i class="fa-solid fa-phone"></i>
+                            {{ order.phone }}
+                        </div>
+                        <div class="order-card-info">
+                            <i class="fa-solid fa-location-dot"></i>
+                            {{ order.address }}
+                        </div>
+                        <div class="order-card-info">
+                            <i class="fa-solid fa-wallet"></i>
+                            {{ order.get_payment_method_display }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="orders-empty">
+                <i class="fa-solid fa-receipt"></i>
+                <p>შეკვეთები ჯერ არ გაქვს</p>
+                <a href="{% url 'products' %}">
+                    <i class="fa-solid fa-paw"></i>
+                    კატალოგში გადასვლა
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // 🔥 ავტომატური სტატუსის განახლება (რეფრეშის გარეშე)
+    // ============================================================
+    const STATUS_TEXT = {
+        'pending': 'მოლოდინში',
+        'confirmed': 'დადასტურებული',
+        'out_of_stock': 'არ არის მარაგში',
+        'packing': 'შეფუთვა',
+        'shipped': 'გაგზავნილი',
+        'delivered': 'მიტანილი',
+        'cancelled': 'გაუქმებული',
+    };
+
+    async function checkOrderStatuses() {
+        try {
+            const res = await fetch('/cart/api/order-status/', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (!res.ok) return;
+
+            const data = await res.json();
+            if (!data.success) return;
+
+            data.orders.forEach(order => {
+                const badge = document.querySelector(
+                    `.order-status-badge[data-order-id="${order.id}"]`
+                );
+                if (!badge) return;
+
+                const currentStatus = badge.dataset.status;
+                if (currentStatus === order.status) return;
+
+                // სტატუსი შეიცვალა — განაახლე badge
+                badge.dataset.status = order.status;
+                badge.className = `order-status-badge status-${order.status}`;
+                badge.textContent = STATUS_TEXT[order.status] || order.status;
+
+                // მცირე ანიმაცია
+                badge.style.transform = 'scale(1.15)';
+                setTimeout(() => {
+                    badge.style.transform = 'scale(1)';
+                }, 300);
+
+                console.log(`🔄 შეკვეთა #${order.id} → ${order.status}`);
+            });
+        } catch (e) {
+            console.error('სტატუსის შემოწმების შეცდომა:', e);
+        }
+    }
+
+    // ყოველ 5 წამში ამოწმებს
+    setInterval(checkOrderStatuses, 5000);
+
+    // გვერდის გახსნისას ერთხელ
+    checkOrderStatuses();
+</script>
+
+</body>
+</html>

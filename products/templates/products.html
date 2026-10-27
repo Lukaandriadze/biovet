@@ -1,0 +1,2300 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>Biovet · კატალოგი</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        :root {
+            --dark-bg: #0b0e14;
+            --surface: #111827;
+            --border-color: rgba(139, 53, 255, 0.2);
+            --purple-main: #8b35ff;
+            --purple-deep: #7020e8;
+            --purple-shadow: #43109b;
+            --text-light: #eef2ff;
+            --text-dim: #a0aec0;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: #ffffff;
+            color: #1a1a2e;
+            padding: 0 0 60px;
+            min-height: 100vh;
+        }
+
+        /* NAV BAR */
+        .nav-bar {
+            padding: 16px 50px;
+            background: var(--dark-bg);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                        background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-bar.scrolled {
+            padding: 10px 50px;
+            background-color: rgba(11, 14, 20, 0.97);
+            box-shadow: 0 1px 0 rgba(139, 53, 255, 0.25),
+                        0 10px 30px rgba(11, 14, 20, 0.6);
+        }
+
+        @media (min-width: 1024px) {
+            .nav-bar.scrolled {
+                background-color: rgba(11, 14, 20, 0.94);
+                backdrop-filter: blur(14px);
+                -webkit-backdrop-filter: blur(14px);
+            }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+        }
+
+        .logo:hover { transform: scale(1.03); }
+
+        .logo-img {
+            height: 60px;
+            width: auto;
+            filter: brightness(0) saturate(100%) invert(47%) sepia(98%) saturate(2000%) hue-rotate(200deg) brightness(100%);
+            transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .logo-text {
+            height: 45px;
+            width: auto;
+            transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-bar.scrolled .logo-img { height: 46px; }
+        .nav-bar.scrolled .logo-text { height: 34px; }
+
+        .profile { display: flex; align-items: center; gap: 16px; }
+
+        .profile-icon-link { text-decoration: none; }
+
+        .profile > i,
+        .profile-icon-link i {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: white;
+            background: rgba(255, 255, 255, 0.08);
+            font-size: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .profile > i:hover,
+        .profile-icon-link i:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .profile-user, .Cart {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(139, 53, 255, 0.1);
+            padding: 4px 12px 4px 8px;
+            border-radius: 40px;
+            border: 1px solid rgba(139, 53, 255, 0.25);
+        }
+
+        .profile-user {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .profile-user i, .Cart i {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: white;
+            background: rgba(255, 255, 255, 0.08);
+            font-size: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .profile-user i:hover, .Cart i:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .profile-user span, .Cart span {
+            font-weight: 500;
+            font-size: 15px;
+            color: #d9c9ff;
+        }
+
+        .Cart {
+            cursor: pointer;
+            transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            border: 1px solid rgba(139, 53, 255, 0.25);
+            background: rgba(139, 53, 255, 0.1);
+            padding: 4px 12px 4px 8px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .Cart:hover {
+            background: rgba(139, 53, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(139, 53, 255, 0.35);
+            border-color: rgba(139, 53, 255, 0.5);
+        }
+
+        .Cart.shake i {
+            animation: cartShake 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+
+        @keyframes cartShake {
+            0%, 100% { transform: translateX(0) rotate(0); }
+            15% { transform: translateX(-3px) rotate(-8deg); }
+            30% { transform: translateX(3px) rotate(8deg); }
+            45% { transform: translateX(-4px) rotate(-10deg); }
+            60% { transform: translateX(4px) rotate(10deg); }
+            75% { transform: translateX(-2px) rotate(-5deg); }
+            90% { transform: translateX(2px) rotate(5deg); }
+        }
+
+        .Cart span.bump {
+            animation: badgeBump 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+
+        @keyframes badgeBump {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); color: #c4b5fd; }
+            100% { transform: scale(1); }
+        }
+
+        .logout-btn {
+            color: #c4b5fd;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 18px;
+            border-radius: 30px;
+            background: rgba(139, 53, 255, 0.15);
+            border: 1px solid rgba(139, 53, 255, 0.3);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(139, 53, 255, 0.3);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(139, 53, 255, 0.35);
+        }
+
+        /* SEARCH */
+        .search-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 100px 0 25px;
+            position: relative;
+            animation: fadeInDown 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .sitting-cat {
+            position: absolute;
+            top: -79px;
+            left: 63%;
+            transform: translateX(-50%);
+            width: 180px;
+            height: auto;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .search-bar {
+            position: relative;
+            overflow: hidden;
+            width: min(700px, 90%);
+            height: 64px;
+            display: flex;
+            align-items: center;
+            padding: 8px 8px 8px 24px;
+            background: #ffffff;
+            border: 2px solid rgba(139, 53, 255, 0.3);
+            border-radius: 16px;
+            box-shadow: 0 8px 0 #e9e0ff, 0 14px 30px rgba(104, 28, 220, 0.14);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                        border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            isolation: isolate;
+        }
+
+        .search-bar::before {
+            content: "";
+            position: absolute;
+            inset: 2px;
+            border-radius: 13px;
+            background: linear-gradient(180deg, rgba(139, 53, 255, 0.04), transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .search-bar:focus-within {
+            border-color: #8b35ff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 #d9c9ff, 0 20px 40px rgba(112, 32, 232, 0.25);
+        }
+
+        .search-bar > i {
+            color: #8b35ff;
+            font-size: 20px;
+            margin-right: 16px;
+            flex-shrink: 0;
+            transition: transform 0.35s, color 0.35s;
+        }
+
+        .search-bar:focus-within > i {
+            transform: scale(1.15) rotate(-8deg);
+            color: #7020e8;
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-bar input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: #2d1b4e;
+            font-size: 16px;
+            font-weight: 600;
+            position: relative;
+            z-index: 2;
+            padding: 0;
+        }
+
+        .search-bar input::placeholder { color: transparent; }
+
+        .animated-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            width: 100%;
+            pointer-events: none;
+            color: #a99fc4;
+            font-size: 16px;
+            font-weight: 500;
+            transition: opacity 0.35s, color 0.35s;
+            z-index: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .animated-placeholder.hidden { opacity: 0; }
+
+        .search-btn {
+            position: relative;
+            overflow: hidden;
+            height: 48px;
+            padding: 0 30px;
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            background: linear-gradient(135deg, #8b35ff 0%, #7020e8 45%, #5a12c9 100%);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #43109b, 0 7px 15px rgba(104, 28, 220, 0.28);
+            transition: transform 0.4s, box-shadow 0.4s;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-btn i {
+            font-size: 14px;
+            transition: transform 0.35s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 0 #43109b, 0 12px 25px rgba(112, 32, 232, 0.42);
+        }
+
+        .search-btn:hover i {
+            transform: translateX(3px);
+        }
+
+        .search-btn:active {
+            transform: translateY(1px) scale(0.98);
+            box-shadow: 0 2px 0 #43109b;
+        }
+
+        /* ACTIVE FILTERS */
+        .active-filters {
+            max-width: 1400px;
+            margin: 0 auto 20px;
+            padding: 0 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(139, 53, 255, 0.12);
+            color: #7020e8;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid rgba(139, 53, 255, 0.3);
+            animation: fadeInUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+            text-decoration: none;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        a.filter-tag:hover {
+            background: rgba(139, 53, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .filter-tag i {
+            color: #8b35ff;
+            font-size: 11px;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* CATALOG */
+        .catalog-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 28px;
+            margin-top: 10px;
+        }
+
+        .product-card {
+            background: #ffffff;
+            border: 1px solid rgba(139, 53, 255, 0.25);
+            border-radius: 24px;
+            padding: 18px 18px 22px;
+            box-shadow: 0 6px 0 #e9e0ff, 0 12px 28px rgba(104, 28, 220, 0.12);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            transition: transform 0.4s, box-shadow 0.4s, border-color 0.4s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .product-card:nth-child(-n+12) {
+            animation: cardEnter 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+        }
+
+        .product-card:nth-child(1)  { animation-delay: 0.02s; }
+        .product-card:nth-child(2)  { animation-delay: 0.04s; }
+        .product-card:nth-child(3)  { animation-delay: 0.06s; }
+        .product-card:nth-child(4)  { animation-delay: 0.08s; }
+        .product-card:nth-child(5)  { animation-delay: 0.10s; }
+        .product-card:nth-child(6)  { animation-delay: 0.12s; }
+        .product-card:nth-child(7)  { animation-delay: 0.14s; }
+        .product-card:nth-child(8)  { animation-delay: 0.16s; }
+        .product-card:nth-child(9)  { animation-delay: 0.18s; }
+        .product-card:nth-child(10) { animation-delay: 0.20s; }
+        .product-card:nth-child(11) { animation-delay: 0.22s; }
+        .product-card:nth-child(12) { animation-delay: 0.24s; }
+
+        @keyframes cardEnter {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .product-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            background: linear-gradient(145deg, rgba(139, 53, 255, 0.04) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(139, 53, 255, 0.8);
+            box-shadow: 0 12px 0 #d9c9ff, 0 25px 40px rgba(112, 32, 232, 0.25);
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: #8b35ff;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 40px;
+            box-shadow: 0 0 12px rgba(139, 53, 255, 0.8);
+            z-index: 2;
+        }
+
+        .product-img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #f5f0ff;
+            border-radius: 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8b35ff;
+            font-size: 52px;
+            border: 1px solid rgba(139, 53, 255, 0.25);
+            box-shadow: inset 0 0 30px rgba(139, 53, 255, 0.08);
+            overflow: hidden;
+            transition: border-color 0.4s, box-shadow 0.4s, color 0.4s;
+        }
+
+        .product-img-real {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 18px;
+            transition: transform 0.5s;
+        }
+
+        .product-card:hover .product-img-real { transform: scale(1.08); }
+
+        .product-card:hover .product-img {
+            border-color: #b07aff;
+            box-shadow: inset 0 0 40px rgba(139, 53, 255, 0.18);
+            color: #7020e8;
+        }
+
+        .product-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #2d1b4e;
+            transition: color 0.3s;
+        }
+
+        .product-card:hover .product-title { color: #7020e8; }
+
+        .product-category {
+            font-size: 13px;
+            color: #8b35ff;
+            font-weight: 500;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .product-category i { font-size: 12px; }
+
+        .product-price {
+            font-size: 20px;
+            font-weight: 800;
+            color: #43109b;
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .add-cart-btn {
+            background: rgba(139, 53, 255, 0.1);
+            border: 1px solid rgba(139, 53, 255, 0.4);
+            color: #8b35ff;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .add-cart-btn:hover {
+            background: #8b35ff;
+            border-color: #b07aff;
+            color: white;
+            box-shadow: 0 0 18px #8b35ff;
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .add-cart-btn:active { transform: scale(0.95); }
+
+        .add-cart-btn.added {
+            background: #16a34a;
+            border-color: #22c55e;
+            color: white;
+            animation: addedPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+
+        @keyframes addedPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.25); }
+            100% { transform: scale(1); }
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 20px;
+            color: #7a6b9e;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            color: #c4b5fd;
+            margin-bottom: 20px;
+            display: block;
+            animation: floatIcon 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        .empty-state p {
+            font-size: 20px;
+            font-weight: 600;
+            color: #4a3a6a;
+            margin-bottom: 10px;
+        }
+
+        .empty-hint {
+            font-size: 14px;
+            color: #8b7ba8;
+            display: block;
+        }
+
+        .empty-hint strong { color: #8b35ff; }
+
+        /* SEARCH PLACEHOLDER */
+        .search-placeholder {
+            max-width: 1400px;
+            margin: 20px auto 60px;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .search-placeholder .gif-wrapper {
+            width: 320px;
+            height: 320px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-placeholder .gif-wrapper img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .search-placeholder.compact {
+            margin: 10px auto 30px;
+            padding: 0 20px;
+        }
+
+        .search-placeholder.compact .gif-wrapper {
+            width: 140px;
+            height: 140px;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .search-placeholder.compact .gif-wrapper {
+                width: 100px;
+                height: 100px;
+                margin-bottom: 8px;
+            }
+        }
+
+        /* PAGINATION */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 50px auto 20px;
+            padding: 0 20px;
+            max-width: 1400px;
+        }
+
+        .pagination-btn {
+            min-width: 42px;
+            height: 42px;
+            padding: 0 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: 1px solid rgba(139, 53, 255, 0.3);
+            border-radius: 12px;
+            background: #ffffff;
+            color: #7020e8;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #e9e0ff, 0 5px 14px rgba(104, 28, 220, 0.08);
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        box-shadow 0.35s,
+                        background-color 0.3s,
+                        color 0.3s;
+            user-select: none;
+        }
+
+        .pagination-btn:hover:not(.active):not(.disabled):not(.dots) {
+            transform: translateY(-3px);
+            background: rgba(139, 53, 255, 0.08);
+            box-shadow: 0 5px 0 #d9c9ff, 0 10px 22px rgba(139, 53, 255, 0.18);
+            color: #5a12c9;
+        }
+
+        .pagination-btn.active {
+            background: linear-gradient(135deg, #8b35ff 0%, #7020e8 50%, #5a12c9 100%);
+            color: #ffffff;
+            border-color: #8b35ff;
+            cursor: default;
+            box-shadow: 0 4px 0 #43109b, 0 8px 20px rgba(139, 53, 255, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .pagination-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .pagination-btn.dots {
+            border: none;
+            background: transparent;
+            box-shadow: none;
+            color: #a99fc4;
+            cursor: default;
+            font-size: 18px;
+            min-width: 24px;
+            padding: 0 4px;
+        }
+
+        .pagination-btn i { font-size: 12px; }
+
+        .pagination-btn.prev-next { padding: 0 18px; }
+
+        /* ==================== SHOWCASE — მარტივი ფოტოები (დეკორაცია) ==================== */
+        .showcase {
+            width: 100%;
+            max-width: 1650px;
+            margin: 30px auto 50px;
+            padding: 0 10px;
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+            gap: 35px;
+            overflow: hidden;
+        }
+
+        .showcase-item {
+            flex: 0 0 auto;
+            width: 230px;
+            height: 170px;
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #111827;
+            box-shadow: 0 6px 20px rgba(104, 28, 220, 0.2);
+            display: block;
+            cursor: default;
+        }
+
+        .showcase-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none;
+        }
+
+        @media (max-width: 1650px) {
+            .showcase { gap: 20px; padding: 0 16px; }
+            .showcase-item { width: 200px; height: 150px; border-radius: 18px; }
+        }
+
+        @media (max-width: 1300px) {
+            .showcase { gap: 16px; }
+            .showcase-item { width: 180px; height: 135px; border-radius: 16px; }
+        }
+
+        @media (max-width: 1000px) {
+            .showcase {
+                gap: 12px;
+                padding: 0 12px;
+                overflow-x: auto;
+                scrollbar-width: thin;
+                scrollbar-color: #c4b5fd transparent;
+                justify-content: flex-start;
+                -webkit-overflow-scrolling: touch;
+            }
+            .showcase::-webkit-scrollbar { height: 6px; }
+            .showcase::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 10px; }
+            .showcase-item { width: 160px; height: 120px; border-radius: 14px; }
+        }
+
+        /* ==================== CATEGORY DROPDOWN FILTER ==================== */
+        .category-dropdown-wrapper {
+            max-width: 1400px;
+            margin: 0 auto 22px;
+            padding: 0 20px;
+            display: flex;
+            justify-content: center;
+            position: relative;
+            animation: fadeInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+            z-index: 100;
+        }
+
+        .category-dropdown-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 260px;
+            max-width: 420px;
+            padding: 12px 18px;
+            background: #ffffff;
+            border: 2px solid rgba(139, 53, 255, 0.3);
+            border-radius: 14px;
+            color: #2d1b4e;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #e9e0ff, 0 8px 20px rgba(104, 28, 220, 0.12);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        box-shadow 0.3s,
+                        border-color 0.3s,
+                        background-color 0.3s;
+            font-family: inherit;
+        }
+
+        .category-dropdown-btn:hover {
+            border-color: rgba(139, 53, 255, 0.6);
+            box-shadow: 0 6px 0 #d9c9ff, 0 12px 26px rgba(139, 53, 255, 0.22);
+            transform: translateY(-2px);
+        }
+
+        .category-dropdown-btn > i:first-child {
+            color: #8b35ff;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        #categoryDropdownLabel {
+            flex: 1;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .category-dropdown-arrow {
+            color: #8b35ff;
+            font-size: 12px;
+            flex-shrink: 0;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .category-dropdown-wrapper.open .category-dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .category-dropdown-wrapper.open .category-dropdown-btn {
+            border-color: #8b35ff;
+            box-shadow: 0 6px 0 #d9c9ff, 0 12px 26px rgba(139, 53, 255, 0.3);
+        }
+
+        .category-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            width: min(460px, calc(100vw - 40px));
+            max-height: 420px;
+            overflow-y: auto;
+            background: #ffffff;
+            border: 2px solid rgba(139, 53, 255, 0.3);
+            border-radius: 16px;
+            box-shadow: 0 10px 0 #e9e0ff, 0 20px 50px rgba(104, 28, 220, 0.3);
+            padding: 8px;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0.25s;
+            z-index: 999;
+        }
+
+        .category-dropdown-wrapper.open .category-dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .category-dropdown-menu::-webkit-scrollbar { width: 8px; }
+        .category-dropdown-menu::-webkit-scrollbar-track { background: #f5f0ff; border-radius: 10px; }
+        .category-dropdown-menu::-webkit-scrollbar-thumb {
+            background: #c4b5fd;
+            border-radius: 10px;
+        }
+        .category-dropdown-menu::-webkit-scrollbar-thumb:hover { background: #8b35ff; }
+
+        .category-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            color: #2d1b4e;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.2s, color 0.2s, transform 0.2s;
+            cursor: pointer;
+        }
+
+        .category-dropdown-item i {
+            color: #8b35ff;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .category-dropdown-item:hover {
+            background: rgba(139, 53, 255, 0.1);
+            color: #5a12c9;
+            transform: translateX(3px);
+        }
+
+        .category-dropdown-item.active {
+            background: linear-gradient(135deg, #8b35ff 0%, #7020e8 60%, #5a12c9 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(139, 53, 255, 0.35);
+        }
+
+        .category-dropdown-item.active i { color: #ffffff; }
+
+        @media (max-width: 768px) {
+            .category-dropdown-btn {
+                min-width: 220px;
+                padding: 10px 14px;
+                font-size: 14px;
+            }
+            .category-dropdown-menu {
+                max-height: 320px;
+            }
+            .category-dropdown-item {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+        }
+
+        /* CART POPUP */
+        .cart-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 14, 20, 0.6);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s, visibility 0.4s;
+            z-index: 1998;
+        }
+
+        @media (min-width: 1024px) {
+            .cart-overlay {
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+            }
+        }
+
+        .cart-overlay.active { opacity: 1; visibility: visible; }
+
+        .cart-popup {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: min(420px, 100%);
+            height: 100vh;
+            background: #ffffff;
+            box-shadow: -10px 0 40px rgba(104, 28, 220, 0.3);
+            z-index: 1999;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(105%);
+            transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+
+        .cart-popup.active { transform: translateX(0); }
+
+        .cart-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(139, 53, 255, 0.2);
+            background: var(--dark-bg);
+        }
+
+        .cart-popup-header h3 {
+            color: white;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cart-popup-header h3 i { color: #a78bfa; }
+
+        .cart-close-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.4s, background-color 0.4s;
+        }
+
+        .cart-close-btn:hover {
+            background: rgba(139, 53, 255, 0.4);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .cart-popup-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px;
+        }
+
+        .cart-popup-body::-webkit-scrollbar { width: 6px; }
+        .cart-popup-body::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 10px; }
+
+        .cart-empty {
+            text-align: center;
+            padding: 80px 20px;
+            color: #7a6b9e;
+        }
+
+        .cart-empty i {
+            font-size: 56px;
+            color: #c4b5fd;
+            margin-bottom: 16px;
+            display: block;
+            animation: floatIcon 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        .cart-empty p { font-size: 16px; font-weight: 600; }
+
+        .cart-item {
+            display: flex;
+            gap: 12px;
+            padding: 14px;
+            border-radius: 16px;
+            background: #f9f7ff;
+            border: 1px solid rgba(139, 53, 255, 0.15);
+            margin-bottom: 12px;
+            animation: slideInCart 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+            transition: transform 0.35s, border-color 0.35s, box-shadow 0.35s;
+        }
+
+        @keyframes slideInCart {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .cart-item.removing {
+            animation: slideOutCart 0.4s cubic-bezier(0.4, 0, 1, 1) forwards;
+        }
+
+        @keyframes slideOutCart {
+            to {
+                opacity: 0;
+                transform: translateX(50px);
+                max-height: 0;
+                padding-top: 0;
+                padding-bottom: 0;
+                margin-bottom: 0;
+            }
+        }
+
+        .cart-item:hover {
+            border-color: rgba(139, 53, 255, 0.4);
+            box-shadow: 0 4px 12px rgba(139, 53, 255, 0.12);
+            transform: translateX(-4px);
+        }
+
+        .cart-item-img {
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            background: #f0e8ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            border: 1px solid rgba(139, 53, 255, 0.2);
+        }
+
+        .cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
+        .cart-item-img i { font-size: 28px; color: #8b35ff; }
+
+        .cart-item-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .cart-item-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #2d1b4e;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cart-item-category {
+            font-size: 12px;
+            color: #8b35ff;
+            font-weight: 500;
+        }
+
+        .cart-item-price {
+            font-size: 14px;
+            color: #43109b;
+            font-weight: 700;
+        }
+
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1px solid rgba(139, 53, 255, 0.3);
+            background: white;
+            color: #8b35ff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .qty-btn:hover {
+            background: #8b35ff;
+            color: white;
+            border-color: #8b35ff;
+            transform: scale(1.1);
+        }
+
+        .qty-value {
+            min-width: 28px;
+            text-align: center;
+            font-weight: 700;
+            color: #2d1b4e;
+            font-size: 14px;
+        }
+
+        .qty-value.flash {
+            animation: qtyFlash 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+
+        @keyframes qtyFlash {
+            0% { transform: scale(1); color: #2d1b4e; }
+            50% { transform: scale(1.3); color: #8b35ff; }
+            100% { transform: scale(1); color: #2d1b4e; }
+        }
+
+        .cart-item-remove {
+            margin-left: auto;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(220, 38, 38, 0.1);
+            color: #dc2626;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .cart-item-remove:hover {
+            background: #dc2626;
+            color: white;
+            transform: scale(1.1) rotate(10deg);
+        }
+
+        .cart-popup-footer {
+            padding: 20px 24px;
+            border-top: 1px solid rgba(139, 53, 255, 0.2);
+            background: #faf8ff;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            color: #4a3a6a;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed rgba(139, 53, 255, 0.3);
+        }
+
+        .cart-total strong {
+            font-size: 22px;
+            color: #43109b;
+            display: inline-block;
+        }
+
+        .cart-total strong.bump {
+            animation: totalBump 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+
+        @keyframes totalBump {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.15); color: #8b35ff; }
+            100% { transform: scale(1); color: #43109b; }
+        }
+
+        .cart-checkout-btn {
+            background: linear-gradient(135deg, #8b35ff, #5a12c9);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #43109b, 0 6px 16px rgba(139, 53, 255, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.35s, box-shadow 0.35s;
+            text-decoration: none;
+        }
+
+        .cart-checkout-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 0 #43109b, 0 10px 22px rgba(139, 53, 255, 0.5);
+            color: white;
+        }
+
+        .cart-clear-btn {
+            background: transparent;
+            color: #dc2626;
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .cart-clear-btn:hover {
+            background: rgba(220, 38, 38, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .cart-loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #8b35ff;
+            font-size: 14px;
+        }
+
+        .cart-loading i {
+            font-size: 32px;
+            animation: spin 1s linear infinite;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .nav-bar { padding: 16px 20px; }
+            .nav-bar.scrolled { padding: 10px 20px; }
+            .profile { gap: 8px; }
+            .profile-user span, .Cart span { font-size: 13px; }
+            .logout-btn { padding: 6px 12px; font-size: 12px; }
+            .search-wrapper { margin: 25px 0 15px; }
+
+            .sitting-cat { width: 60px; top: -42px; }
+
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 16px;
+            }
+
+            .product-title { font-size: 15px; }
+            .product-price { font-size: 16px; }
+            .add-cart-btn { width: 34px; height: 34px; font-size: 14px; }
+
+            .logo-img { height: 44px; }
+            .logo-text { height: 32px; }
+            .nav-bar.scrolled .logo-img { height: 36px; }
+            .nav-bar.scrolled .logo-text { height: 26px; }
+
+            .pagination-btn {
+                min-width: 38px;
+                height: 38px;
+                font-size: 13px;
+                padding: 0 10px;
+            }
+
+            .pagination-btn.prev-next { padding: 0 12px; }
+        }
+
+        @media (max-width: 480px) {
+            .nav-bar { padding: 12px 14px; }
+            .logo-img { height: 36px; }
+            .logo-text { height: 26px; }
+            .nav-bar.scrolled .logo-img { height: 30px; }
+            .nav-bar.scrolled .logo-text { height: 22px; }
+            .profile-user span { display: none; }
+            .profile-user, .Cart { padding: 4px; }
+            .logout-btn { padding: 6px 10px; font-size: 11px; }
+
+            .sitting-cat { width: 50px; top: -35px; }
+
+            .pagination { gap: 5px; }
+
+            .pagination-btn {
+                min-width: 34px;
+                height: 34px;
+                font-size: 12px;
+                padding: 0 8px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* DOG + CAT BANNER */
+        .dog-cat-banner {
+            width: calc(100% - 80px);
+            max-width: 1400px;
+            height: 350px;
+            margin: 16px auto 20px;
+            background-image: url("{% static 'images/dog-cat-banner.png' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .dog-cat-banner {
+                width: calc(100% - 30px);
+                height: 190px;
+                margin: 12px auto 16px;
+                border-radius: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dog-cat-banner {
+                width: calc(100% - 20px);
+                height: 150px;
+                border-radius: 14px;
+            }
+        }
+    
+        /* =================================================================
+           ===== RESPONSIVE AUDIT FIXES (additive, no redesign) =====
+           ================================================================= */
+        body { overflow-x: hidden; overflow-x: clip; }
+        img { max-width: 100%; }
+
+        /* navbar: let the logo shrink instead of pushing the buttons off-screen */
+        .logo { min-width: 0; }
+        .logo-img, .logo-text { object-fit: contain; }
+        .profile { flex-shrink: 0; }
+
+        /* product grid: never force a column wider than the container */
+        .product-grid { grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); }
+        .product-card { min-width: 0; }
+        .product-title, .product-category { overflow-wrap: anywhere; }
+        .filter-tag { max-width: 100%; overflow-wrap: anywhere; }
+
+        /* empty-search illustration was a hard 320px box (overflowed at 320px screens) */
+        .search-placeholder .gif-wrapper { width: min(320px, 100%); height: auto; aspect-ratio: 1 / 1; }
+        .search-placeholder.compact .gif-wrapper { width: min(140px, 100%); }
+
+        /* cart drawer: 100vh is taller than the visible area on mobile browsers */
+        .cart-popup { height: 100vh; height: 100dvh; max-width: 100vw; }
+        .cart-popup-body { overflow-x: hidden; }
+        .cart-popup-header h3 { min-width: 0; }
+        .cart-popup-footer { padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+
+        /* showcase strip: 6 items were clipped (not scrollable) between 1001px and ~1190px */
+        @media (min-width: 1001px) and (max-width: 1200px) {
+            .showcase { gap: 12px; padding: 0 12px; }
+            .showcase-item { width: 150px; height: 112px; border-radius: 14px; }
+        }
+
+        /* 2 columns on 375/430px phones (old 160px minimum made 375px fall back to 1 column by 1px) */
+        @media (max-width: 768px) {
+            .product-grid { grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr)); }
+            .search-placeholder .gif-wrapper { width: min(240px, 100%); }
+            .search-placeholder.compact .gif-wrapper { width: min(100px, 100%); }
+        }
+
+        @media (max-width: 480px) {
+            .nav-bar { gap: 8px; }
+            .nav-bar.scrolled { padding: 10px 14px; }
+            .profile { gap: 6px; }
+            .profile > i, .profile-icon-link i, .profile-user i, .Cart i { width: 36px; height: 36px; font-size: 17px; }
+            .Cart span { font-size: 12px; }
+
+            .catalog-section, .active-filters, .pagination, .search-placeholder { padding-left: 12px; padding-right: 12px; }
+            .category-dropdown-wrapper { padding: 0 12px; }
+            .category-dropdown-btn { min-width: 0; width: 100%; max-width: 420px; }
+            .category-dropdown-menu { width: min(460px, calc(100vw - 24px)); }
+
+            .search-bar { width: 92%; height: 56px; padding: 6px 6px 6px 14px; border-radius: 14px; }
+            .search-bar > i { margin-right: 10px; font-size: 17px; }
+            .search-btn { height: 42px; padding: 0 16px; font-size: 14px; }
+
+            .product-grid { gap: 12px; }
+            .product-card { padding: 12px 12px 16px; border-radius: 20px; }
+            .product-card::before { border-radius: 20px; }
+            .product-img { margin-bottom: 12px; border-radius: 14px; font-size: 40px; }
+            .product-img-real { border-radius: 14px; }
+            .product-title { font-size: 14px; }
+            .product-category { font-size: 12px; }
+            .product-price { font-size: 15px; gap: 6px; }
+            .product-badge { top: 10px; right: 10px; font-size: 10px; padding: 3px 8px; }
+
+            .cart-popup-header { padding: 16px; }
+            .cart-popup-header h3 { font-size: 18px; }
+            .cart-popup-body { padding: 12px 14px; }
+            .cart-item { padding: 12px; gap: 10px; }
+            .cart-item-img { width: 60px; height: 60px; }
+            .cart-popup-footer { padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+        }
+
+        @media (max-width: 380px) {
+            .nav-bar { padding: 10px 10px; }
+            .nav-bar.scrolled { padding: 8px 10px; }
+            .logo { gap: 6px; }
+            .logo-img { height: 30px; }
+            .logo-text { height: 22px; }
+            .nav-bar.scrolled .logo-img { height: 26px; }
+            .nav-bar.scrolled .logo-text { height: 20px; }
+            .profile > i, .profile-icon-link i, .profile-user i, .Cart i { width: 32px; height: 32px; font-size: 15px; }
+            .logout-btn { padding: 5px 8px; font-size: 10px; }
+            .search-btn i { display: none; }
+            .search-btn { padding: 0 14px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav-bar" id="navBar">
+    <div class="logo">
+        <img src="{% static 'images/biovet.png' %}" class="logo-img" alt="Biovet Logo">
+        <img src="{% static 'images/ბიოვეტი.png' %}" class="logo-text" alt="Biovet">
+    </div>
+
+    <div class="profile">
+        {% if user.is_authenticated %}
+            <a href="{% url 'profile' %}" class="profile-user">
+                <i class="fa-solid fa-user"></i>
+                <span>{{ user.username }}</span>
+            </a>
+
+            <div class="Cart" id="cartToggle" role="button" tabindex="0" aria-label="კალათა">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span id="cartCount">0</span>
+            </div>
+
+            <a href="{% url 'logout' %}" class="logout-btn">
+                გასვლა
+            </a>
+        {% else %}
+            <a href="{% url 'index' %}" class="profile-icon-link" aria-label="შესვლა">
+                <i class="fa-solid fa-user"></i>
+            </a>
+        {% endif %}
+    </div>
+</nav>
+
+<div class="dog-cat-banner"></div>
+
+<!-- ==================== SHOWCASE — დეკორაცია, არა ფილტრი ==================== -->
+<div class="showcase">
+    <div class="showcase-item">
+        <img src="{% static 'images/ძაღლის-კატეგორია.png' %}" alt="ძაღლი">
+    </div>
+    <div class="showcase-item">
+        <img src="{% static 'images/კატის-კატეგორია.png' %}" alt="კატა">
+    </div>
+    <div class="showcase-item">
+        <img src="{% static 'images/ფრინველის-კატეგორია.jpg' %}" alt="ფრინველი">
+    </div>
+    <div class="showcase-item">
+        <img src="{% static 'images/ღრღნელის-კატეგორია.jpg' %}" alt="მღრღნელი">
+    </div>
+    <div class="showcase-item">
+        <img src="{% static 'images/თევზის-კატეგორია.png' %}" alt="თევზი">
+    </div>
+    <div class="showcase-item">
+        <img src="{% static 'images/სხვა-კატეგორია.png' %}" alt="სხვა">
+    </div>
+</div>
+
+<!-- ==================== CATEGORY DROPDOWN FILTER ==================== -->
+<div class="category-dropdown-wrapper">
+    <button type="button" class="category-dropdown-btn" id="categoryDropdownBtn" aria-haspopup="true" aria-expanded="false">
+        <i class="fa-solid fa-layer-group"></i>
+        <span id="categoryDropdownLabel">
+            {% if selected_category and selected_category not in 'all,ყველა' %}
+                {{ selected_category }}
+            {% else %}
+                ყველა კატეგორია
+            {% endif %}
+        </span>
+        <i class="fa-solid fa-chevron-down category-dropdown-arrow"></i>
+    </button>
+
+    <div class="category-dropdown-menu" id="categoryDropdownMenu" role="menu">
+        <a href="{% url 'products' %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}"
+           class="category-dropdown-item {% if not selected_category or selected_category in 'all,ყველა' %}active{% endif %}"
+           role="menuitem">
+            <i class="fa-solid fa-layer-group"></i>
+            ყველა კატეგორია
+        </a>
+
+        {% for cat in all_categories %}
+            <a href="{% url 'products' %}?category={{ cat|urlencode }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+               class="category-dropdown-item {% if selected_category == cat %}active{% endif %}"
+               role="menuitem"
+               title="{{ cat }}">
+                {{ cat }}
+            </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-wrapper">
+    <img src="{% static 'images/sick_cat.jpg' %}" alt="კატა" class="sitting-cat">
+
+    <form class="search-bar" method="GET" action="{% url 'products' %}">
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <div class="search-input-wrapper">
+            <input type="text" id="searchInput" name="q" autocomplete="off"
+                   aria-label="პროდუქტის ძებნა" value="{{ search_query }}">
+            <div class="animated-placeholder" id="animatedPlaceholder">მოძებნე პროდუქტი...</div>
+        </div>
+
+        {% if selected_category and selected_category != 'all' %}
+            <input type="hidden" name="category" value="{{ selected_category }}">
+        {% endif %}
+        {% if min_price %}<input type="hidden" name="min_price" value="{{ min_price }}">{% endif %}
+        {% if max_price %}<input type="hidden" name="max_price" value="{{ max_price }}">{% endif %}
+        {% if sort and sort != 'new' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+
+        <button type="submit" class="search-btn">
+            ძებნა
+            <i class="fa-solid fa-arrow-right"></i>
+        </button>
+    </form>
+</div>
+
+<!-- ==================== ACTIVE FILTERS ==================== -->
+{% if search_query or min_price or max_price or selected_category %}
+<div class="active-filters">
+    {% if selected_category and selected_category not in 'all,ყველა' %}
+        <a href="{% url 'products' %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}"
+           class="filter-tag">
+            <i class="fa-solid fa-xmark"></i>
+            კატეგორია: {{ selected_category }}
+        </a>
+    {% endif %}
+    {% if search_query %}
+        <span class="filter-tag">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            "{{ search_query }}"
+        </span>
+    {% endif %}
+    {% if min_price %}
+        <span class="filter-tag">
+            <i class="fa-solid fa-coins"></i>
+            min: ₾{{ min_price }}
+        </span>
+    {% endif %}
+    {% if max_price %}
+        <span class="filter-tag">
+            <i class="fa-solid fa-coins"></i>
+            max: ₾{{ max_price }}
+        </span>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="catalog-section">
+
+    {% if not has_filters %}
+        <div class="search-placeholder compact">
+            <div class="gif-wrapper">
+                <img src="{% static 'images/dog-gif.gif' %}" alt="ძებნა">
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="product-grid">
+        {% for product in products %}
+            <a href="{% url 'product_detail' product.id %}" class="product-card"
+               data-product-id="{{ product.id }}">
+
+                {% if product.badge %}
+                    <div class="product-badge">{{ product.badge }}</div>
+                {% endif %}
+
+                <div class="product-img">
+                    {% if product.img %}
+                        <img src="{{ product.img }}"
+                             alt="{{ product.name }}"
+                             class="product-img-real"
+                             loading="lazy"
+                             decoding="async"
+                             width="240"
+                             height="240"
+                             onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fa-solid fa-paw\'></i>';">
+                    {% else %}
+                        <i class="fa-solid fa-paw"></i>
+                    {% endif %}
+                </div>
+
+                <div class="product-title">{{ product.name }}</div>
+
+                <div class="product-category">
+                    {% if product.category.icon %}
+                        <i class="{{ product.category.icon }}"></i>
+                    {% else %}
+                        <i class="fa-solid fa-tag"></i>
+                    {% endif %}
+                    {{ product.category.name }}
+                </div>
+
+                <div class="product-price">
+                    ₾ {{ product.price }}
+                    <div class="add-cart-btn"
+                         data-product-id="{{ product.id }}"
+                         data-product-name="{{ product.name }}"
+                         title="{{ product.description }}"
+                         role="button"
+                         tabindex="0"
+                         aria-label="კალათაში დამატება">
+                        <i class="fa-solid fa-cart-plus"></i>
+                    </div>
+                </div>
+            </a>
+        {% empty %}
+            <div class="empty-state">
+                <i class="fa-solid fa-box-open"></i>
+                <p>პროდუქტები ვერ მოიძებნა</p>
+                {% if search_query %}
+                    <span class="empty-hint">საძიებო სიტყვა: "<strong>{{ search_query }}</strong>"</span>
+                {% endif %}
+                {% if selected_category %}
+                    <span class="empty-hint">კატეგორია: "<strong>{{ selected_category }}</strong>"</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if products.has_other_pages %}
+    <div class="pagination">
+
+        {% if products.has_previous %}
+            <a href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}{% if selected_category and selected_category not in 'all,ყველა' %}category={{ selected_category|urlencode }}&{% endif %}{% if min_price %}min_price={{ min_price }}&{% endif %}{% if max_price %}max_price={{ max_price }}&{% endif %}{% if sort and sort != 'new' %}sort={{ sort }}&{% endif %}page={{ products.previous_page_number }}"
+               class="pagination-btn prev-next" aria-label="წინა გვერდი">
+                <i class="fa-solid fa-chevron-left"></i>
+                <span>წინა</span>
+            </a>
+        {% else %}
+            <span class="pagination-btn prev-next disabled" aria-disabled="true">
+                <i class="fa-solid fa-chevron-left"></i>
+                <span>წინა</span>
+            </span>
+        {% endif %}
+
+        {% for num in products.paginator.page_range %}
+            {% if products.number == num %}
+                <span class="pagination-btn active">{{ num }}</span>
+            {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                <a href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}{% if selected_category and selected_category not in 'all,ყველა' %}category={{ selected_category|urlencode }}&{% endif %}{% if min_price %}min_price={{ min_price }}&{% endif %}{% if max_price %}max_price={{ max_price }}&{% endif %}{% if sort and sort != 'new' %}sort={{ sort }}&{% endif %}page={{ num }}"
+                   class="pagination-btn">{{ num }}</a>
+            {% elif num == products.number|add:'-3' or num == products.number|add:'3' %}
+                <span class="pagination-btn dots">…</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if products.has_next %}
+            <a href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}{% if selected_category and selected_category not in 'all,ყველა' %}category={{ selected_category|urlencode }}&{% endif %}{% if min_price %}min_price={{ min_price }}&{% endif %}{% if max_price %}max_price={{ max_price }}&{% endif %}{% if sort and sort != 'new' %}sort={{ sort }}&{% endif %}page={{ products.next_page_number }}"
+               class="pagination-btn prev-next" aria-label="შემდეგი გვერდი">
+                <span>შემდეგი</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+        {% else %}
+            <span class="pagination-btn prev-next disabled" aria-disabled="true">
+                <span>შემდეგი</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </span>
+        {% endif %}
+
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- CART OVERLAY + POPUP -->
+<div class="cart-overlay" id="cartOverlay"></div>
+
+<div class="cart-popup" id="cartPopup">
+    <div class="cart-popup-header">
+        <h3><i class="fa-solid fa-cart-shopping"></i> კალათა</h3>
+        <button class="cart-close-btn" id="cartCloseBtn" aria-label="დახურვა">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="cart-popup-body" id="cartPopupBody">
+        <div class="cart-empty">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <p>კალათა ცარიელია</p>
+        </div>
+    </div>
+
+    <div class="cart-popup-footer" id="cartPopupFooter" style="display: none;">
+        <div class="cart-total">
+            <span>სულ:</span>
+            <strong>₾ <span id="cartTotalAmount">0</span></strong>
+        </div>
+        <a href="{% url 'checkout' %}" class="cart-checkout-btn">
+            <i class="fa-solid fa-credit-card"></i> გაგრძელება
+        </a>
+        <button class="cart-clear-btn" id="cartClearBtn">
+            <i class="fa-solid fa-trash"></i> გასუფთავება
+        </button>
+    </div>
+</div>
+
+<script>
+(function () {
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    /* ==================== CATEGORY DROPDOWN ==================== */
+    const dropdownWrapper = document.querySelector('.category-dropdown-wrapper');
+    const dropdownBtn = document.getElementById('categoryDropdownBtn');
+
+    if (dropdownWrapper && dropdownBtn) {
+        dropdownBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const isOpen = dropdownWrapper.classList.toggle('open');
+            dropdownBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!dropdownWrapper.contains(e.target)) {
+                dropdownWrapper.classList.remove('open');
+                dropdownBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                dropdownWrapper.classList.remove('open');
+                dropdownBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        dropdownWrapper.querySelectorAll('.category-dropdown-item').forEach(item => {
+            item.addEventListener('click', () => {
+                dropdownWrapper.classList.remove('open');
+                dropdownBtn.setAttribute('aria-expanded', 'false');
+            });
+        });
+    }
+
+    const cartBadge = document.getElementById('cartCount');
+    const cartWrapper = document.querySelector('.Cart');
+
+    /* NAV BAR SCROLL */
+    const navBar = document.getElementById('navBar');
+    let lastScrollState = false;
+    let scrollTicking = false;
+
+    function handleScroll() {
+        const isScrolled = window.scrollY > 20;
+        if (isScrolled !== lastScrollState) {
+            lastScrollState = isScrolled;
+            if (navBar) navBar.classList.toggle('scrolled', isScrolled);
+        }
+        scrollTicking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+        if (!scrollTicking) {
+            window.requestAnimationFrame(handleScroll);
+            scrollTicking = true;
+        }
+    }, { passive: true });
+
+    handleScroll();
+
+    /* CART BADGE */
+    function updateCartBadge(count) {
+        if (!cartBadge) return;
+        const oldCount = parseInt(cartBadge.textContent) || 0;
+        cartBadge.textContent = count;
+
+        if (oldCount !== count) {
+            cartBadge.classList.remove('bump');
+            void cartBadge.offsetWidth;
+            cartBadge.classList.add('bump');
+
+            cartWrapper?.classList.remove('shake');
+            void cartWrapper?.offsetWidth;
+            cartWrapper?.classList.add('shake');
+
+            setTimeout(() => {
+                cartBadge.classList.remove('bump');
+                cartWrapper?.classList.remove('shake');
+            }, 750);
+        }
+    }
+
+    /* ADD TO CART */
+    async function addToCart(productId, button) {
+        try {
+            const response = await fetch(`/cart/add/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                alert('კალათაში დასამატებლად გაიარე ავტორიზაცია.');
+                return;
+            }
+
+            if (!response.ok) {
+                let errorData = {};
+                try { errorData = await response.json(); } catch (e) {}
+                alert(errorData.message || 'კალათაში დამატებისას დაფიქსირდა შეცდომა.');
+                return;
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                updateCartBadge(data.cart_count);
+                const icon = button.querySelector('i');
+                if (icon) {
+                    const originalClass = icon.className;
+                    icon.className = 'fa-solid fa-check';
+                    button.classList.add('added');
+                    setTimeout(() => {
+                        icon.className = originalClass;
+                        button.classList.remove('added');
+                    }, 900);
+                }
+            } else {
+                alert(data.message || 'პროდუქტი კალათაში ვერ დაემატა.');
+            }
+        } catch (error) {
+            console.error('Cart error:', error);
+            alert('კალათასთან დაკავშირება ვერ მოხერხდა.');
+        }
+    }
+
+    document.querySelectorAll('.add-cart-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const productId = this.dataset.productId;
+            if (!productId) return;
+            addToCart(productId, this);
+        });
+        btn.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                const productId = this.dataset.productId;
+                if (!productId) return;
+                addToCart(productId, this);
+            }
+        });
+    });
+
+    /* CART POPUP */
+    const cartToggle = document.getElementById('cartToggle');
+    const cartPopup = document.getElementById('cartPopup');
+    const cartOverlay = document.getElementById('cartOverlay');
+    const cartCloseBtn = document.getElementById('cartCloseBtn');
+    const cartPopupBody = document.getElementById('cartPopupBody');
+    const cartPopupFooter = document.getElementById('cartPopupFooter');
+    const cartTotalAmount = document.getElementById('cartTotalAmount');
+    const cartClearBtn = document.getElementById('cartClearBtn');
+
+    function openCart() {
+        if (!cartPopup) return;
+        cartPopup.classList.add('active');
+        cartOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        loadCart();
+    }
+
+    function closeCart() {
+        if (!cartPopup) return;
+        cartPopup.classList.remove('active');
+        cartOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    async function loadCart() {
+        cartPopupBody.innerHTML = `
+            <div class="cart-loading">
+                <i class="fa-solid fa-spinner"></i>
+                იტვირთება...
+            </div>
+        `;
+
+        try {
+            const res = await fetch('/cart/', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (res.status === 401 || res.status === 403) {
+                cartPopupBody.innerHTML = `
+                    <div class="cart-empty">
+                        <i class="fa-solid fa-user-lock"></i>
+                        <p>კალათისთვის გაიარე ავტორიზაცია</p>
+                    </div>
+                `;
+                cartPopupFooter.style.display = 'none';
+                return;
+            }
+
+            if (!res.ok) {
+                cartPopupBody.innerHTML = `
+                    <div class="cart-empty">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <p>შეცდომა: ${res.status}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const data = await res.json();
+
+            if (!data.items || data.items.length === 0) {
+                cartPopupBody.innerHTML = `
+                    <div class="cart-empty">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <p>კალათა ცარიელია</p>
+                    </div>
+                `;
+                cartPopupFooter.style.display = 'none';
+                updateCartBadge(0);
+                return;
+            }
+
+            renderCartItems(data.items);
+            cartTotalAmount.textContent = data.total.toFixed(2);
+            cartPopupFooter.style.display = 'flex';
+            updateCartBadge(data.cart_count);
+        } catch (e) {
+            console.error('Cart fetch error:', e);
+            cartPopupBody.innerHTML = `
+                <div class="cart-empty">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <p>ვერ ჩაიტვირთა</p>
+                </div>
+            `;
+        }
+    }
+
+    function renderCartItems(items) {
+        cartPopupBody.innerHTML = items.map((item, index) => `
+            <div class="cart-item" data-item-id="${item.id}"
+                 style="animation-delay: ${Math.min(index * 40, 400)}ms;">
+                <div class="cart-item-img">
+                    ${item.img
+                        ? `<img src="${item.img}" alt="${item.name}" loading="lazy"
+                                onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fa-solid fa-paw\\'></i>';">
+                        `
+                        : `<i class="fa-solid fa-paw"></i>`}
+                </div>
+                <div class="cart-item-info">
+                    <div class="cart-item-name">${item.name}</div>
+                    ${item.category ? `<div class="cart-item-category">${item.category}</div>` : ''}
+                    <div class="cart-item-price">₾ ${item.price.toFixed(2)}</div>
+                    <div class="cart-item-controls">
+                        <button class="qty-btn" data-action="decrease" data-item-id="${item.id}">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <span class="qty-value" data-qty-id="${item.id}">${item.quantity}</span>
+                        <button class="qty-btn" data-action="increase" data-item-id="${item.id}">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                        <button class="cart-item-remove" data-action="remove" data-item-id="${item.id}">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    cartPopupBody.addEventListener('click', async (e) => {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        const itemId = btn.dataset.itemId;
+
+        if (action === 'increase') {
+            await cartAction(`/cart/increase/${itemId}/`, itemId, 'increase');
+        } else if (action === 'decrease') {
+            await cartAction(`/cart/decrease/${itemId}/`, itemId, 'decrease');
+        } else if (action === 'remove') {
+            const el = btn.closest('.cart-item');
+            if (el) el.classList.add('removing');
+            await cartAction(`/cart/remove/${itemId}/`, itemId, 'remove');
+        }
+    });
+
+    async function cartAction(url, itemId, action) {
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+
+            updateCartBadge(data.cart_count);
+
+            if (action === 'increase') {
+                const qtyEl = cartPopupBody.querySelector(`[data-qty-id="${itemId}"]`);
+                if (qtyEl) {
+                    qtyEl.textContent = data.quantity;
+                    qtyEl.classList.remove('flash');
+                    void qtyEl.offsetWidth;
+                    qtyEl.classList.add('flash');
+                }
+            } else if (action === 'decrease') {
+                if (data.removed) {
+                    const el = cartPopupBody.querySelector(`[data-item-id="${itemId}"]`);
+                    if (el) {
+                        el.classList.add('removing');
+                        setTimeout(() => el.remove(), 400);
+                    }
+                } else {
+                    const qtyEl = cartPopupBody.querySelector(`[data-qty-id="${itemId}"]`);
+                    if (qtyEl) {
+                        qtyEl.textContent = data.quantity;
+                        qtyEl.classList.remove('flash');
+                        void qtyEl.offsetWidth;
+                        qtyEl.classList.add('flash');
+                    }
+                }
+            } else if (action === 'remove') {
+                const el = cartPopupBody.querySelector(`[data-item-id="${itemId}"]`);
+                if (el) {
+                    el.classList.add('removing');
+                    setTimeout(() => el.remove(), 400);
+                }
+            }
+
+            cartTotalAmount.textContent = data.cart_total.toFixed(2);
+            const totalStrong = cartTotalAmount.parentElement;
+            totalStrong?.classList.remove('bump');
+            void totalStrong?.offsetWidth;
+            totalStrong?.classList.add('bump');
+            setTimeout(() => totalStrong?.classList.remove('bump'), 650);
+
+            if (data.cart_count === 0) {
+                setTimeout(() => {
+                    cartPopupBody.innerHTML = `
+                        <div class="cart-empty">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                            <p>კალათა ცარიელია</p>
+                        </div>
+                    `;
+                    cartPopupFooter.style.display = 'none';
+                }, 400);
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    cartClearBtn?.addEventListener('click', async () => {
+        if (!confirm('ნამდვილად გინდა კალათის გასუფთავება?')) return;
+        try {
+            await fetch('/cart/clear/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            loadCart();
+            updateCartBadge(0);
+        } catch (e) { console.error(e); }
+    });
+
+    cartToggle?.addEventListener('click', openCart);
+    cartToggle?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openCart();
+        }
+    });
+    cartCloseBtn?.addEventListener('click', closeCart);
+    cartOverlay?.addEventListener('click', closeCart);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeCart();
+        }
+    });
+
+    async function initCartCount() {
+        try {
+            const res = await fetch('/cart/', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                updateCartBadge(data.cart_count || 0);
+            }
+        } catch (e) {}
+    }
+
+    if (cartToggle) initCartCount();
+
+    /* SEARCH PLACEHOLDER ANIMATION */
+    const input = document.getElementById('searchInput');
+    const placeholderEl = document.getElementById('animatedPlaceholder');
+
+    if (input && placeholderEl) {
+        const texts = [
+            "მოძებნე პროდუქტი...",
+            "მოძებნე საკვები...",
+            "მოძებნე ვიტამინები...",
+            "მოძებნე ანტიპარაზიტული...",
+            "მოძებნე ანტიბიოტიკი...",
+            "მოძებნე ვაქცინა...",
+            "მოძებნე ჰიგიენა...",
+            "მოძებნე აქსესუარი..."
+        ];
+
+        let currentIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        let timeoutId = null;
+
+        const TYPING_SPEED = 70;
+        const DELETING_SPEED = 35;
+        const PAUSE_BEFORE_DELETE = 1600;
+        const PAUSE_BEFORE_TYPE = 400;
+
+        function setPlaceholderText(text) {
+            placeholderEl.textContent = text;
+            if (input.value.trim().length > 0) {
+                placeholderEl.classList.add('hidden');
+            } else {
+                placeholderEl.classList.remove('hidden');
+            }
+        }
+
+        function animatePlaceholder() {
+            const currentText = texts[currentIndex];
+            const fullLength = currentText.length;
+
+            if (!isDeleting) {
+                if (charIndex < fullLength) {
+                    charIndex++;
+                    setPlaceholderText(currentText.substring(0, charIndex));
+                    timeoutId = setTimeout(animatePlaceholder, TYPING_SPEED);
+                } else {
+                    timeoutId = setTimeout(() => {
+                        isDeleting = true;
+                        animatePlaceholder();
+                    }, PAUSE_BEFORE_DELETE);
+                }
+            } else {
+                if (charIndex > 0) {
+                    charIndex--;
+                    setPlaceholderText(currentText.substring(0, charIndex));
+                    timeoutId = setTimeout(animatePlaceholder, DELETING_SPEED);
+                } else {
+                    isDeleting = false;
+                    currentIndex = (currentIndex + 1) % texts.length;
+                    timeoutId = setTimeout(animatePlaceholder, PAUSE_BEFORE_TYPE);
+                }
+            }
+        }
+
+        input.addEventListener('input', function () {
+            if (input.value.trim().length > 0) {
+                placeholderEl.classList.add('hidden');
+            } else {
+                placeholderEl.classList.remove('hidden');
+            }
+        });
+
+        if (input.value.trim().length === 0) {
+            timeoutId = setTimeout(animatePlaceholder, 300);
+        } else {
+            placeholderEl.classList.add('hidden');
+        }
+    }
+
+})();
+</script>
+</body>
+</html>

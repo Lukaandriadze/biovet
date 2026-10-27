@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="ka">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>მომსახურების პირობები - Biovet</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../static/styles/style.css">
+
+    <style>
+        /* =================================================================
+           ===== ROOT VARIABLES — შავი/თეთრი =====
+           ================================================================= */
+        :root {
+            --primary-color: #000000;
+            --primary-dark: #1a1a1a;
+            --primary-light: #333333;
+            --accent-color: #666666;
+            --dark-bg: #ffffff;
+            --card-bg: #fafafa;
+            --border-color: #e5e5e5;
+            --text-muted: #737373;
+            --text-light: #000000;
+            --transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* =================================================================
+           ===== 🐾 CUSTOM PAW CURSOR — შავი/თეთრი =====
+           ================================================================= */
+        html, body {
+            cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><g fill='%23000000' stroke='%23ffffff' stroke-width='1.5' stroke-linejoin='round'><ellipse cx='16' cy='21' rx='7' ry='6'/><ellipse cx='8' cy='11' rx='2.6' ry='3.5'/><ellipse cx='13' cy='7' rx='2.6' ry='3.5'/><ellipse cx='19' cy='7' rx='2.6' ry='3.5'/><ellipse cx='24' cy='11' rx='2.6' ry='3.5'/></g></svg>") 16 16, auto;
+        }
+
+        a, button, .auth-tab, .popup-submit, .back-btn {
+            cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><g fill='%23555555' stroke='%23ffffff' stroke-width='1.5' stroke-linejoin='round'><ellipse cx='16' cy='21' rx='7' ry='6'/><ellipse cx='8' cy='11' rx='2.6' ry='3.5'/><ellipse cx='13' cy='7' rx='2.6' ry='3.5'/><ellipse cx='19' cy='7' rx='2.6' ry='3.5'/><ellipse cx='24' cy='11' rx='2.6' ry='3.5'/></g></svg>") 16 16, pointer;
+        }
+
+        /* =================================================================
+           ===== GLOBAL =====
+           ================================================================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: var(--text-light);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* =================================================================
+           ===== NAVBAR (იგივე რაც მთავარ გვერდზე) =====
+           ================================================================= */
+        .nav-bar {
+            padding: 16px 50px;
+            background: var(--dark-bg);
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-img {
+            height: 60px;
+            width: auto;
+            filter: brightness(0) saturate(100%);
+        }
+
+        .logo-text {
+            height: 45px;
+            width: auto;
+            filter: brightness(0) saturate(100%);
+        }
+
+        /* =================================================================
+           ===== TERMS PAGE =====
+           ================================================================= */
+        .terms-page {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 24px 100px;
+        }
+
+        /* ===== BACK BUTTON ===== */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            margin-bottom: 30px;
+            background: var(--card-bg);
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--primary-color);
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .back-btn i {
+            font-size: 14px;
+            transition: transform 0.3s ease;
+        }
+
+        .back-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(0, 0, 0, 0.05),
+                transparent
+            );
+            transition: left 0.6s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--primary-color);
+            color: #ffffff;
+            border-color: var(--primary-color);
+            transform: translateX(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .back-btn:hover i {
+            transform: translateX(-4px);
+        }
+
+        .back-btn:hover::before {
+            left: 100%;
+        }
+
+        .back-btn:active {
+            transform: translateX(-2px) scale(0.98);
+        }
+
+        /* ===== HEADER ===== */
+        .terms-header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .terms-header h1 {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--primary-color);
+            letter-spacing: -1px;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .terms-header h1 .accent {
+            position: relative;
+            display: inline-block;
+        }
+
+        .terms-header h1 .accent::after {
+            content: "";
+            position: absolute;
+            bottom: 4px;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: var(--primary-color);
+            opacity: 0.15;
+            z-index: -1;
+        }
+
+        .terms-header .last-updated {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-muted);
+            background: var(--card-bg);
+            padding: 8px 20px;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+
+        .terms-header .last-updated i {
+            color: var(--primary-color);
+        }
+
+        /* ===== SECTION ===== */
+        .terms-section {
+            margin-bottom: 36px;
+            scroll-margin-top: 100px;
+        }
+
+        .terms-section h2 {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .terms-section h2 .section-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            flex-shrink: 0;
+            border-radius: 10px;
+            background: var(--primary-color);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .terms-section p {
+            font-size: 16px;
+            color: #404040;
+            line-height: 1.8;
+            margin-bottom: 14px;
+        }
+
+        .terms-section strong {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .terms-section ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 14px 0;
+        }
+
+        .terms-section ul li {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            color: #404040;
+            line-height: 1.7;
+        }
+
+        .terms-section ul li::before {
+            content: "";
+            position: absolute;
+            left: 4px;
+            top: 11px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary-color);
+        }
+
+        /* ===== FOOTER ===== */
+        .terms-footer {
+            margin-top: 60px;
+            padding: 40px 30px;
+            text-align: center;
+            background: var(--primary-color);
+            border-radius: 20px;
+            border: 1px solid var(--primary-color);
+        }
+
+        .terms-footer .brand {
+            font-size: 26px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .terms-footer .location {
+            font-size: 15px;
+            color: #cccccc;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .terms-footer .location i {
+            color: #ffffff;
+        }
+
+        /* =================================================================
+           ===== RESPONSIVE =====
+           ================================================================= */
+        @media (max-width: 992px) {
+            .nav-bar {
+                padding: 14px 30px;
+            }
+            .logo-img { height: 50px; }
+            .logo-text { height: 38px; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-bar {
+                padding: 12px 20px;
+            }
+            .logo-img { height: 45px; }
+            .logo-text { height: 34px; }
+
+            .terms-page {
+                padding: 40px 18px 80px;
+            }
+
+            .back-btn {
+                padding: 10px 18px;
+                font-size: 14px;
+                margin-bottom: 24px;
+            }
+
+            .terms-header h1 {
+                font-size: 32px;
+            }
+
+            .terms-section h2 {
+                font-size: 19px;
+            }
+
+            .terms-section h2 .section-num {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+
+            .terms-section p,
+            .terms-section ul li {
+                font-size: 15px;
+            }
+
+            .terms-footer {
+                padding: 30px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-bar {
+                padding: 10px 14px;
+            }
+            .logo-img { height: 40px; }
+            .logo-text { height: 30px; }
+
+            .terms-page {
+                padding: 30px 14px 60px;
+            }
+
+            .back-btn {
+                padding: 9px 16px;
+                font-size: 13px;
+                border-radius: 10px;
+                gap: 8px;
+                margin-bottom: 20px;
+            }
+
+            .back-btn i {
+                font-size: 12px;
+            }
+
+            .terms-header {
+                margin-bottom: 36px;
+                padding-bottom: 24px;
+            }
+
+            .terms-header h1 {
+                font-size: 26px;
+            }
+
+            .terms-header .last-updated {
+                font-size: 12px;
+                padding: 6px 14px;
+            }
+
+            .terms-section h2 {
+                font-size: 17px;
+                gap: 10px;
+            }
+
+            .terms-section h2 .section-num {
+                width: 28px;
+                height: 28px;
+                font-size: 13px;
+                border-radius: 8px;
+            }
+
+            .terms-section p,
+            .terms-section ul li {
+                font-size: 14.5px;
+            }
+        }
+    
+        /* =================================================================
+           ===== RESPONSIVE AUDIT FIXES (additive, no redesign) =====
+           ================================================================= */
+        img { max-width: 100%; }
+        .logo { min-width: 0; }
+        .logo-img, .logo-text { object-fit: contain; }
+        .terms-page { width: 100%; }
+        .terms-header h1, .terms-section h2, .terms-section p, .terms-section ul li { overflow-wrap: anywhere; }
+        .terms-section h2 > span:not(.section-num) { min-width: 0; }
+        .terms-header .last-updated { flex-wrap: wrap; justify-content: center; max-width: 100%; text-align: center; }
+        .terms-footer .location { flex-wrap: wrap; justify-content: center; }
+        @media (min-width: 1440px) {
+            .terms-page { max-width: 960px; }
+        }
+        @media (max-width: 480px) {
+            .terms-footer { padding: 24px 16px; border-radius: 16px; }
+            .terms-footer .brand { font-size: 22px; }
+            .terms-section ul li { padding-left: 24px; }
+            .terms-section { scroll-margin-top: 70px; }
+        }
+        @media (max-width: 360px) {
+            .logo { gap: 8px; }
+            .logo-img { height: 34px; }
+            .logo-text { height: 26px; }
+            .terms-header h1 { font-size: 23px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== NAVBAR (იგივე რაც მთავარ გვერდზე) ===== -->
+    <nav class="nav-bar container-fluid">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-3 col-md-4 col-6">
+                <div class="logo">
+                    <img src="../static/images/biovet.png" class="logo-img" alt="Biovet Logo">
+                    <img src="../static/images/ბიოვეტი.png" class="logo-text" alt="Biovet">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== TERMS PAGE ===== -->
+    <div class="terms-page">
+
+        <!-- BACK BUTTON -->
+        <a href="/" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i>
+            მთავარ გვერდზე დაბრუნება
+        </a>
+
+        <!-- HEADER -->
+        <div class="terms-header">
+            <h1>მომსახურების <span class="accent">პირობები</span></h1>
+            <div class="last-updated">
+                <i class="fa-regular fa-calendar"></i>
+                ბოლო განახლება: 2026 წლის 25 სექტემბერი
+            </div>
+        </div>
+
+        <!-- 1 -->
+        <div class="terms-section">
+            <h2><span class="section-num">1</span> შესავალი</h2>
+            <p>
+                ეს დოკუმენტი აწესრიგებს <strong>Biovet-ის</strong> ვებგვერდისა და მასთან დაკავშირებული
+                სერვისების გამოყენების პირობებს. ვებგვერდის გამოყენებით, რეგისტრაციით ან შეკვეთის
+                განთავსებით თქვენ ეთანხმებით ქვემოთ მოცემულ პირობებს.
+            </p>
+        </div>
+
+        <!-- 2 -->
+        <div class="terms-section">
+            <h2><span class="section-num">2</span> მომსახურების აღწერა</h2>
+            <p>
+                <strong>Biovet</strong> არის შინაური ცხოველებისთვის განკუთვნილი ონლაინ პლატფორმა,
+                რომლის საშუალებითაც მომხმარებლებს შეუძლიათ დაათვალიერონ და შეიძინონ ცხოველებისთვის
+                განკუთვნილი პროდუქტები, გაეცნონ პროდუქტის შესახებ ინფორმაციას, მართონ საკუთარი
+                ანგარიში და გამოიყენონ პლატფორმაზე ხელმისაწვდომი დამატებითი ფუნქციები.
+            </p>
+            <p>
+                Biovet ასევე გთავაზობთ AI-ზე დაფუძნებულ საინფორმაციო ასისტენტს, რომელიც
+                მომხმარებლებს შინაური ცხოველების ჯანმრთელობასთან დაკავშირებული ზოგადი
+                ინფორმაციის მიღებაში ეხმარება.
+            </p>
+        </div>
+
+        <!-- 3 -->
+        <div class="terms-section">
+            <h2><span class="section-num">3</span> ანგარიშის შექმნა და პასუხისმგებლობა</h2>
+            <p>
+                ანგარიშის შექმნისას მომხმარებელი ვალდებულია მიუთითოს სწორი და აქტუალური
+                ინფორმაცია და დაიცვას საკუთარი ანგარიშის მონაცემების უსაფრთხოება.
+            </p>
+            <p>
+                მომხმარებელი პასუხისმგებელია საკუთარი ანგარიშიდან განხორციელებულ ყველა
+                მოქმედებაზე და ვალდებულია დაუყოვნებლივ აცნობოს Biovet-ს ანგარიშთან
+                დაკავშირებული საეჭვო ან არაავტორიზებული აქტივობის შესახებ.
+            </p>
+        </div>
+
+        <!-- 4 -->
+        <div class="terms-section">
+            <h2><span class="section-num">4</span> პროდუქტის ინფორმაცია</h2>
+            <p>
+                Biovet ცდილობს ვებგვერდზე განთავსებული პროდუქციის დასახელებები, აღწერები,
+                ფასები, ფოტოები და სხვა ინფორმაცია იყოს ზუსტი და განახლებული.
+            </p>
+            <p>
+                თუმცა, შესაძლებელია ტექნიკური შეცდომები, ინფორმაციის დაგვიანებული განახლება
+                ან პროდუქტის მარაგისა და ფასის ცვლილება.
+            </p>
+            <p>
+                პროდუქტის შეძენამდე მომხმარებელმა უნდა გაეცნოს მის შეფუთვაზე მითითებულ
+                ინფორმაციასა და გამოყენების ინსტრუქციას.
+            </p>
+        </div>
+
+        <!-- 5 -->
+        <div class="terms-section">
+            <h2><span class="section-num">5</span> შეკვეთები და გადახდა</h2>
+            <p>
+                მომხმარებელს შეუძლია ვებგვერდის საშუალებით შეარჩიოს პროდუქტი და განათავსოს
+                შეკვეთა, თუ შესაბამისი ფუნქცია ხელმისაწვდომია.
+            </p>
+            <p>
+                შეკვეთის დამუშავება დამოკიდებულია პროდუქტის ხელმისაწვდომობაზე, მომხმარებლის
+                მიერ მითითებული ინფორმაციის სისწორესა და მიწოდების შესაბამის პირობებზე.
+            </p>
+            <p>
+                პროდუქტების ფასები შესაძლოა შეიცვალოს წინასწარი შეტყობინების გარეშე. აქციებსა
+                და ფასდაკლებებს შესაძლოა ჰქონდეს დამატებითი პირობები და მოქმედების ვადა.
+            </p>
+        </div>
+
+        <!-- 6 -->
+        <div class="terms-section">
+            <h2><span class="section-num">6</span> AI ასისტენტი</h2>
+            <p>
+                Biovet-ის AI ასისტენტი შექმნილია შინაური ცხოველების შესახებ
+                <strong>ზოგადი საინფორმაციო დახმარებისთვის</strong>.
+            </p>
+            <p>
+                AI-ის მიერ მოწოდებული ინფორმაცია არ წარმოადგენს ვეტერინარის დიაგნოზს,
+                მკურნალობის დანიშნულებას ან პროფესიულ ვეტერინარულ კონსულტაციას.
+            </p>
+            <p>
+                AI-ის პასუხები შეიძლება იყოს არასრული ან შეიცავდეს შეცდომებს. ცხოველის
+                ჯანმრთელობასთან დაკავშირებული სერიოზული ან გადაუდებელი მდგომარეობის
+                შემთხვევაში მომხმარებელმა უნდა მიმართოს კვალიფიციურ ვეტერინარს.
+            </p>
+            <p>
+                მომხმარებელმა არ უნდა მიიღოს გადაწყვეტილება მედიკამენტის გამოყენების ან
+                მკურნალობის დაწყების შესახებ მხოლოდ AI-ის პასუხზე დაყრდნობით.
+            </p>
+        </div>
+
+        <!-- 7 -->
+        <div class="terms-section">
+            <h2><span class="section-num">7</span> გამოყენების წესები</h2>
+            <p>ვებგვერდის გამოყენებისას მომხმარებელი ვალდებულია:</p>
+            <ul>
+                <li>არ გამოიყენოს პლატფორმა უკანონო მიზნებისთვის;</li>
+                <li>არ სცადოს სისტემის უსაფრთხოების მექანიზმების დარღვევა;</li>
+                <li>არ განახორციელოს სხვა მომხმარებლების ანგარიშებზე ან მონაცემებზე არაავტორიზებული წვდომა;</li>
+                <li>არ გამოიყენოს პლატფორმა მისი ნორმალური ფუნქციონირების ხელის შეშლის მიზნით;</li>
+                <li>არ მიაწოდოს სისტემას განზრახ მცდარი ან უკანონო ინფორმაცია.</li>
+            </ul>
+        </div>
+
+        <!-- 8 -->
+        <div class="terms-section">
+            <h2><span class="section-num">8</span> ინტელექტუალური საკუთრება</h2>
+            <p>
+                Biovet-ის ვებგვერდის დიზაინი, ლოგო, ბრენდინგი, პროგრამული უზრუნველყოფა,
+                ტექსტები, გრაფიკული მასალა და სხვა ორიგინალური კონტენტი წარმოადგენს Biovet-ის
+                ან შესაბამისი უფლებამოსილი პირების საკუთრებას.
+            </p>
+            <p>
+                მათი უნებართვო კოპირება, გავრცელება, შეცვლა ან კომერციული გამოყენება დაუშვებელია.
+            </p>
+            <p>
+                მომხმარებლის მიერ პლატფორმაზე მოწოდებული პირადი ან შეკვეთასთან დაკავშირებული
+                ინფორმაცია გამოიყენება შესაბამისი მომსახურების გასაწევად და მოქმედი
+                კანონმდებლობის შესაბამისად.
+            </p>
+        </div>
+
+        <!-- 9 -->
+        <div class="terms-section">
+            <h2><span class="section-num">9</span> პასუხისმგებლობის შეზღუდვა</h2>
+            <p>
+                Biovet ცდილობს უზრუნველყოს ვებგვერდისა და მისი ფუნქციების სტაბილური და
+                შეუფერხებელი მუშაობა, თუმცა არ იძლევა გარანტიას, რომ მომსახურება ყოველთვის
+                იქნება სრულად ხელმისაწვდომი და ტექნიკური ხარვეზებისგან თავისუფალი.
+            </p>
+            <p>
+                Biovet არ არის პასუხისმგებელი იმ ზიანზე, რომელიც შეიძლება გამოწვეული იყოს
+                ვებგვერდის დროებითი შეფერხებით, ტექნიკური პრობლემებით, მესამე მხარის
+                სერვისების შეფერხებით ან მომხმარებლის მიერ მოწოდებული არასწორი ინფორმაციის
+                გამოყენებით.
+            </p>
+        </div>
+
+        <!-- 10 -->
+        <div class="terms-section">
+            <h2><span class="section-num">10</span> ელექტრონული კომუნიკაცია, ავტომატური შეტყობინებები და პირდაპირი მარკეტინგი</h2>
+            <p>
+                წინამდებარე წესებსა და პირობებზე დათანხმებით, მომხმარებელი ეთანხმება, რომ
+                Biovet-მა გამოიყენოს მომხმარებლის მიერ მითითებული საკონტაქტო მონაცემები,
+                მათ შორის ელექტრონული ფოსტის მისამართი და მობილური ტელეფონის ნომერი,
+                მომსახურებასთან დაკავშირებული შეტყობინებების გასაგზავნად მოქმედი კანონმდებლობის
+                შესაბამისად.
+            </p>
+            <p>შეტყობინებების კატეგორიები შეიძლება მოიცავდეს:</p>
+            <ul>
+                <li>
+                    <strong>ტრანზაქციულ და სისტემურ შეტყობინებებს:</strong>
+                    რეგისტრაციის დადასტურება, ანგარიშთან დაკავშირებული უსაფრთხოების
+                    შეტყობინებები, ერთჯერადი კოდები (OTP), შეკვეთის სტატუსის ცვლილებები
+                    და ტექნიკური შეტყობინებები;
+                </li>
+                <li>
+                    <strong>სერვისულ შეტყობინებებს:</strong>
+                    შეკვეთის, მიწოდების ან მომხმარებლის მიერ მოთხოვნილი მომსახურების
+                    შესახებ ინფორმაცია;
+                </li>
+                <li>
+                    <strong>საინფორმაციო და მარკეტინგულ შეტყობინებებს:</strong>
+                    ახალი პროდუქტები, ახალი ფუნქციები, სპეციალური შეთავაზებები,
+                    ფასდაკლებები და Biovet-ის სიახლეები.
+                </li>
+            </ul>
+            <p>
+                შეტყობინებების გაგზავნა შესაძლებელია როგორც ოპერატორის მიერ, ასევე
+                ავტომატიზებული სისტემებისა და შესაბამისი საკომუნიკაციო სერვისების გამოყენებით.
+            </p>
+            <p>
+                <strong>თანხმობის გამოხმობა (Opt-Out):</strong> მომხმარებელს უფლება აქვს,
+                კანონით გათვალისწინებული წესით, ნებისმიერ დროს უარი თქვას მარკეტინგული
+                შეტყობინებების მიღებაზე.
+            </p>
+            <p>
+                მომხმარებელს შეუძლია მარკეტინგული კომუნიკაციის შეწყვეტა შესაბამის შეტყობინებაში
+                მითითებული ინსტრუქციის გამოყენებით ან Biovet-თან დაკავშირების გზით.
+            </p>
+            <p>
+                მარკეტინგულ შეტყობინებებზე უარის თქმა არ ზღუდავს აუცილებელი ტრანზაქციული,
+                საოპერაციო ან ანგარიშის უსაფრთხოებასთან დაკავშირებული შეტყობინებების მიღებას.
+            </p>
+        </div>
+
+        <!-- 11 -->
+        <div class="terms-section">
+            <h2><span class="section-num">11</span> ანგარიშის შეწყვეტა</h2>
+            <p>
+                მომხმარებელს შეუძლია ნებისმიერ დროს შეწყვიტოს საკუთარი ანგარიშის გამოყენება.
+            </p>
+            <p>
+                Biovet იტოვებს უფლებას, მოქმედი კანონმდებლობის შესაბამისად, დროებით შეზღუდოს
+                ან შეწყვიტოს ანგარიში, თუ მომხმარებელი არღვევს წინამდებარე პირობებს ან
+                პლატფორმის უსაფრთხოებას.
+            </p>
+        </div>
+
+        <!-- 12 -->
+        <div class="terms-section">
+            <h2><span class="section-num">12</span> პირობების ცვლილება</h2>
+            <p>
+                Biovet-ს შეუძლია პერიოდულად განაახლოს ან შეცვალოს წინამდებარე მომსახურების
+                პირობები.
+            </p>
+            <p>
+                მნიშვნელოვანი ცვლილებების შემთხვევაში მომხმარებელს ინფორმაცია მიეწოდება
+                შესაბამისი საკომუნიკაციო არხით ან ვებგვერდზე განთავსებული შეტყობინების საშუალებით.
+            </p>
+            <p>
+                განახლებული პირობები ძალაში შედის მათი ვებგვერდზე გამოქვეყნებისთანავე,
+                თუ სხვა რამ არ არის მითითებული.
+            </p>
+        </div>
+
+        <!-- 13 -->
+        <div class="terms-section">
+            <h2><span class="section-num">13</span> მარეგულირებელი კანონმდებლობა</h2>
+            <p>
+                ეს პირობები რეგულირდება <strong>საქართველოს მოქმედი კანონმდებლობის</strong>
+                შესაბამისად.
+            </p>
+        </div>
+
+        <!-- 14 -->
+        <div class="terms-section">
+            <h2><span class="section-num">14</span> დაგვიკავშირდით</h2>
+            <p>
+                მომსახურების პირობებთან, პროდუქტებთან, შეკვეთებთან ან Biovet-ის სერვისებთან
+                დაკავშირებული კითხვების შემთხვევაში დაგვიკავშირდით Biovet-ის ვებგვერდზე
+                მითითებული საკონტაქტო საშუალებების გამოყენებით.
+            </p>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="terms-footer">
+            <div class="brand">Biovet</div>
+            <div class="location">
+                <i class="fa-solid fa-location-dot"></i>
+                თბილისი, საქართველო
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
