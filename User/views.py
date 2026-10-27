@@ -105,6 +105,7 @@ def _send_code_email(user, code, new=False):
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
+            "User-Agent": "Biovet-Django/1.0 (email verification)",
         },
         method="POST",
     )
