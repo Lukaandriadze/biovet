@@ -1,11 +1,16 @@
 
+import os
+import sys
 import json
 from pathlib import Path
 from decimal import Decimal, InvalidOperation
 
-from django.core.management.base import BaseCommand
-from django.db import transaction
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
+import django
+django.setup()
+
+from django.db import transaction
 from products.models import Product
 from categories.models import Category
 
@@ -14,7 +19,7 @@ def import_products():
     json_path = Path(__file__).resolve().parent / "fixed_products.json"
 
     if not json_path.exists():
-        raise FileNotFoundError(f"JSON ფაილი ვერ მოიძებნა: {json_path}")
+        raise FileNotFoundError(f"JSON ვერ მოიძებნა: {json_path}")
 
     with json_path.open("r", encoding="utf-8") as file:
         data = json.load(file)
@@ -23,11 +28,20 @@ def import_products():
         data = data.get("products", [])
 
     if not isinstance(data, list):
-        raise ValueError("JSON-ში პროდუქტების სია ვერ მოიძებნა.")
+        raise ValueError("JSON უნდა შეიცავდეს პროდუქტების სიას.")
 
     created = 0
     updated = 0
     skipped = 0
+
+    fields = {field.name for field in Product._meta.get_fields()}
+    price_field = Product._meta.get_field("price")
+    integer_price = price_field.get_internal_type() in (
+        "IntegerField",
+        "PositiveIntegerField",
+        "BigIntegerField",
+        "PositiveBigIntegerField",
+    )
 
     with transaction.atomic():
         for index, item in enumerate(data, start=1):
@@ -42,14 +56,14 @@ def import_products():
                     print(f"{index}: სახელი არ აქვს — გამოტოვებულია")
                     continue
 
-                category_values = item.get("category", [])
-                if not isinstance(category_values, list):
-                    category_values = [category_values] if category_values else []
+                categories = item.get("category", [])
+                if not isinstance(categories, list):
+                    categories = [categories] if categories else []
 
                 category_name = next(
                     (
                         str(value).strip()
-                        for value in category_values
+                        for value in categories
                         if value is not None and str(value).strip()
                     ),
                     "სხვა",
@@ -64,27 +78,26 @@ def import_products():
                     images = [images] if images else []
 
                 image = next(
-                    (str(value).strip() for value in images if value),
+                    (
+                        str(value).strip()
+                        for value in images
+                        if value and str(value).strip()
+                    ),
                     "",
                 )
 
-                raw_price = item.get("price", 0)
+                raw_price = item.get("price")
                 price = Decimal(str(raw_price or 0).strip())
 
                 if not price.is_finite() or price < 0:
                     raise ValueError("არასწორი ფასი")
 
-                # ველების რეალური ტიპების გათვალისწინება
-                price_field = Product._meta.get_field("price")
-                if price_field.get_internal_type() in (
-                    "IntegerField",
-                    "PositiveIntegerField",
-                    "BigIntegerField",
-                    "PositiveBigIntegerField",
-                ):
+                if integer_price:
+                    if price != price.to_integral_value():
+                        raise ValueError(
+                            f"ფასი მთელი რიცხვი უნდა იყოს: {price}"
+                        )
                     price = int(price)
-
-                fields = {f.name for f in Product._meta.get_fields()}
 
                 defaults = {
                     "name": name,
@@ -97,15 +110,13 @@ def import_products():
                 if "badge" in fields:
                     defaults["badge"] = item.get("badge") or ""
 
-                # პროექტის მოდელში სურათის ველი შეიძლება image ან img იყოს
-                if "image" in fields:
-                    defaults["image"] = image
-                elif "img" in fields:
-                    defaults["img"] = image
-
-                # კატეგორიის ველი მხოლოდ მაშინ, თუ მოდელში არსებობს
                 if "category" in fields:
                     defaults["category"] = category
+
+                if "img" in fields:
+                    defaults["img"] = image
+                elif "image" in fields:
+                    defaults["image"] = image
 
                 product_id = item.get("id")
 
@@ -125,11 +136,21 @@ def import_products():
                 else:
                     updated += 1
 
-                print(f"{index}/{len(data)}: {product.name} — OK")
+                print(
+                    f"{index}/{len(data)} "
+                    f"{'დაემატა' if was_created else 'განახლდა'}: {name}"
+                )
 
-            except (ValueError, TypeError, InvalidOperation, OverflowError) as error:
+            except (
+                ValueError,
+                TypeError,
+                InvalidOperation,
+                OverflowError,
+            ) as error:
                 skipped += 1
-                print(f"{index}: გამოტოვებულია — {error}")
+                print(
+                    f"{index}/{len(data)} გამოტოვებულია: {error}"
+                )
 
     print("\n========== იმპორტის შედეგი ==========")
     print(f"JSON-ში სულ: {len(data)}")
@@ -141,9 +162,4 @@ def import_products():
 
 
 if __name__ == "__main__":
-    import os
-    import django
-
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
-    django.setup()
     import_products()
