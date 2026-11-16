@@ -3,7 +3,6 @@ from decimal import Decimal
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.http import require_POST, require_GET
-from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.utils import timezone
 from django.db import transaction
@@ -11,12 +10,15 @@ from django.db.models import Sum, F, ExpressionWrapper, DecimalField
 import secrets
 
 from .models import Cart, CartItem, Order
-from products.models import Product, Profile
+from products.models import Product
 from .telegram import send_order_to_telegram
 
 
-def get_or_create_cart(user):
-    cart, _ = Cart.objects.get_or_create(user=user)
+def get_or_create_cart(request):
+    """სტუმრის კალათა — სესიის გასაღებით (რეგისტრაცია საჭირო არ არის)."""
+    if not request.session.session_key:
+        request.session.create()
+    cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
     return cart
 
 
@@ -62,10 +64,9 @@ def _get_delivery_cost(city):
 # ============================================================
 # CART API
 # ============================================================
-@login_required
 @require_GET
 def cart_detail(request):
-    cart = get_or_create_cart(request.user)
+    cart = get_or_create_cart(request)
 
     items = []
     total = 0
@@ -95,11 +96,10 @@ def cart_detail(request):
     })
 
 
-@login_required
 @require_POST
 def cart_add(request, product_id):
     product = get_object_or_404(Product, id=product_id, is_active=True)
-    cart = get_or_create_cart(request.user)
+    cart = get_or_create_cart(request)
 
     item, created = CartItem.objects.get_or_create(
         cart=cart,
@@ -121,10 +121,9 @@ def cart_add(request, product_id):
     })
 
 
-@login_required
 @require_POST
 def cart_increase(request, item_id):
-    item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    item = get_object_or_404(CartItem, id=item_id, cart=get_or_create_cart(request))
     item.quantity += 1
     item.save()
 
@@ -139,10 +138,9 @@ def cart_increase(request, item_id):
     })
 
 
-@login_required
 @require_POST
 def cart_decrease(request, item_id):
-    item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    item = get_object_or_404(CartItem, id=item_id, cart=get_or_create_cart(request))
     cart = item.cart
 
     if item.quantity > 1:
@@ -166,10 +164,9 @@ def cart_decrease(request, item_id):
     })
 
 
-@login_required
 @require_POST
 def cart_remove(request, item_id):
-    item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    item = get_object_or_404(CartItem, id=item_id, cart=get_or_create_cart(request))
     cart = item.cart
     item.delete()
 
@@ -182,10 +179,9 @@ def cart_remove(request, item_id):
     })
 
 
-@login_required
 @require_POST
 def cart_clear(request):
-    cart = get_or_create_cart(request.user)
+    cart = get_or_create_cart(request)
     cart.items.all().delete()
 
     return JsonResponse({
@@ -198,9 +194,8 @@ def cart_clear(request):
 # ============================================================
 # 🔥 CHECKOUT
 # ============================================================
-@login_required(login_url="/")
 def checkout(request):
-    cart = get_or_create_cart(request.user)
+    cart = get_or_create_cart(request)
     cart_items = cart.items.select_related('product', 'product__category')
 
     if not cart_items.exists():
@@ -208,8 +203,6 @@ def checkout(request):
 
     stats = _cart_stats(cart)
     products_total = stats['cart_total_decimal']
-
-    profile, _ = Profile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
         form_token = request.POST.get('form_token', '')
@@ -228,7 +221,6 @@ def checkout(request):
         address = request.POST.get('address', '').strip()
         city = _normalize_city(request.POST.get('city', ''))
         payment_method = request.POST.get('payment_method', 'cash')
-        save_profile = request.POST.get('save_profile') == '1'
 
         # უსაფრთხოება: ბარათი გამორთულია — მხოლოდ ნაღდი
         if payment_method not in ('cash',):
@@ -246,16 +238,9 @@ def checkout(request):
 
         # ===== შეკვეთის შექმნა ერთ transaction-ში =====
         with transaction.atomic():
-            if save_profile:
-                profile.first_name = first_name
-                profile.last_name = last_name
-                profile.phone = phone
-                profile.address = address
-                profile.save()
-
             order = Order.objects.create(
                 cart=cart,
-                user=request.user,
+                user=None,
                 first_name=first_name,
                 last_name=last_name,
                 phone=phone,
@@ -281,7 +266,6 @@ def checkout(request):
             print(f"⚠️ Telegram გაგზავნის შეცდომა: {e}")
 
         request.session['success_token'] = token
-        request.session['success_token_user'] = request.user.id
         request.session['success_token_expires'] = order.token_expires_at.isoformat()
         request.session['success_order_id'] = order.id
 
@@ -291,11 +275,7 @@ def checkout(request):
     form_token = secrets.token_urlsafe(32)
     request.session['checkout_token'] = form_token
 
-    selected_city = ''
-    if hasattr(profile, 'city') and profile.city:
-        selected_city = profile.city
-    if not selected_city:
-        selected_city = _normalize_city(request.GET.get('city', ''))
+    selected_city = _normalize_city(request.GET.get('city', ''))
 
     initial_delivery = _get_delivery_cost(selected_city) if selected_city else Decimal('8.00')
 
@@ -305,7 +285,6 @@ def checkout(request):
         'products_total': float(products_total),
         'delivery_cost': float(initial_delivery),
         'selected_city': selected_city,
-        'profile': profile,
         'form_token': form_token,
     }
     return render(request, 'checkout.html', context)
@@ -314,11 +293,9 @@ def checkout(request):
 # ============================================================
 # 🔥 ORDER SUCCESS
 # ============================================================
-@login_required(login_url="/")
 def order_success(request):
     token = request.GET.get('token', '')
     session_token = request.session.get('success_token', '')
-    session_user_id = request.session.get('success_token_user')
     expires_str = request.session.get('success_token_expires', '')
     order_id = request.session.get('success_order_id')
 
@@ -326,9 +303,6 @@ def order_success(request):
         return redirect('products')
 
     if not secrets.compare_digest(token, session_token):
-        return redirect('products')
-
-    if session_user_id != request.user.id:
         return redirect('products')
 
     try:
@@ -344,7 +318,7 @@ def order_success(request):
 
     order = (
         Order.objects
-        .filter(id=order_id, user=request.user)
+        .filter(id=order_id)
         .prefetch_related('items__product')
         .first()
     )
@@ -370,21 +344,7 @@ def order_success(request):
 def _clear_success_session(request):
     for key in [
         'success_token',
-        'success_token_user',
         'success_token_expires',
         'success_order_id',
     ]:
         request.session.pop(key, None)
-
-
-# ============================================================
-# 🔥 ORDER STATUS API — ავტო-განახლებისთვის
-# ============================================================
-@login_required
-@require_GET
-def order_status_api(request):
-    orders = Order.objects.filter(user=request.user).values('id', 'status')
-    return JsonResponse({
-        'success': True,
-        'orders': list(orders),
-    })

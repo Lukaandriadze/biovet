@@ -11,7 +11,4 @@ urlpatterns = [
     path('clear/', views.cart_clear, name='cart_clear'),
     path('checkout/', views.checkout, name='checkout'),
     path('order-success/', views.order_success, name='order_success'),
-
-    # 🔥 ავტო-განახლებისთვის
-    path('api/order-status/', views.order_status_api, name='order_status_api'),
 ]

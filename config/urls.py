@@ -7,9 +7,7 @@ urlpatterns = [
     path('mwvane/', admin.site.urls),
     # path("", include("AI.urls")),  # AI დაუმთავრებელი ფუნქცია, ამიტომ დროებით გამორთულია
     path("", include("products.urls")),
-    path('users/', include('User.urls')),
     path("cart/", include("cart.urls")),
-    path('accounts/', include('allauth.urls')),
 ]
 
 if settings.DEBUG:

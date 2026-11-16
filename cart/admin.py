@@ -17,7 +17,7 @@ class CartItemInline(admin.TabularInline):
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ("user", "items_count", "total", "updated_at")
+    list_display = ("__str__", "items_count", "total", "updated_at")
     search_fields = ("user__username", "user__email")
     raw_id_fields = ("user",)
     inlines = [CartItemInline]
@@ -59,13 +59,13 @@ def export_orders_csv(modeladmin, request, queryset):
     response.write("\ufeff")
     writer = csv.writer(response)
     writer.writerow([
-        "ID", "იუზერი", "შეკვეთის №", "სახელი", "გვარი", "ტელეფონი", "ქალაქი", "მისამართი",
+        "ID", "მომხმარებელი", "შეკვეთის №", "სახელი", "გვარი", "ტელეფონი", "ქალაქი", "მისამართი",
         "გადახდა", "სტატუსი", "პროდუქტების ჯამი", "მიწოდება", "სულ", "თარიღი", "პროდუქტები",
     ])
     for o in queryset.select_related("user").prefetch_related("items"):
         items = "; ".join(f"{i.product_name} x{i.quantity}" for i in o.items.all())
         writer.writerow([
-            o.id, o.user.username, o.user_order_number, o.first_name, o.last_name, o.phone,
+            o.id, o.user.username if o.user else "სტუმარი", o.user_order_number, o.first_name, o.last_name, o.phone,
             o.city, o.address, o.get_payment_method_display(), o.get_status_display(),
             o.products_total, o.delivery_cost, o.total,
             o.created_at.strftime("%Y-%m-%d %H:%M"), items,

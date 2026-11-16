@@ -1,13 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import ensure_csrf_cookie
 from decimal import Decimal, InvalidOperation
 
 from django.db.models import Q
 from django.core.paginator import Paginator
 
-from .models import Product, Profile
+from .models import Product
 from categories.models import Category
-from cart.models import Order
 
 
 PRODUCTS_PER_PAGE = 12
@@ -30,7 +29,7 @@ def terms(request):
     return render(request, "terms.html")
 
 
-@login_required(login_url="/")
+@ensure_csrf_cookie
 def products_page(request):
     category_slug = request.GET.get('category', '').strip()
     search_query = request.GET.get('q', '').strip()
@@ -118,7 +117,7 @@ def products_page(request):
     return render(request, "products.html", context)
 
 
-@login_required(login_url="/")
+@ensure_csrf_cookie
 def product_detail(request, product_id):
     product = get_object_or_404(
         Product.objects.select_related('category').filter(is_active=True),
@@ -141,27 +140,3 @@ def product_detail(request, product_id):
 
 def terms_page(request):
     return render(request, "terms.html")
-
-@login_required(login_url="/")
-def profile_page(request):
-    profile, created = Profile.objects.get_or_create(user=request.user)
-
-    if request.method == "POST":
-        profile.first_name = request.POST.get("first_name", "").strip()
-        profile.last_name = request.POST.get("last_name", "").strip()
-        profile.phone = request.POST.get("phone", "").strip()
-        profile.address = request.POST.get("address", "").strip()
-        profile.save()
-        return redirect("profile")
-
-    orders = (
-        Order.objects
-        .filter(user=request.user)
-        .prefetch_related('items__product')
-        .order_by('-created_at')
-    )
-
-    return render(request, "profile.html", {
-        "profile": profile,
-        "orders": orders,
-    })

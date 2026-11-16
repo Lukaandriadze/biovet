@@ -118,9 +118,6 @@
         <img src="{% static 'images/biovet.png' %}" class="logo-img" alt="Biovet">
         <img src="{% static 'images/ბიოვეტი.png' %}" class="logo-text" alt="Biovet">
     </a>
-    {% if user.is_authenticated %}
-        <a href="{% url 'logout' %}" class="logout-btn">გასვლა</a>
-    {% endif %}
 </nav>
 
 <div class="success-wrapper">
@@ -237,10 +234,6 @@
             <a href="{% url 'products' %}" class="btn-primary">
                 <i class="fa-solid fa-paw"></i>
                 კატალოგში დაბრუნება
-            </a>
-            <a href="{% url 'profile' %}" class="btn-secondary">
-                <i class="fa-solid fa-user"></i>
-                ჩემი პროფილი
             </a>
         </div>
     </div>

@@ -58,18 +58,16 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-STATIC_URL = "/static/"
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 ALLOWED_HOSTS = [
-    "biovet-ge.onrender.com",
+    "biovet.onrender.com",
     "localhost",
     "127.0.0.1",
 ]
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+
 CSRF_TRUSTED_ORIGINS = [
-    "https://biovet-ge.onrender.com",
+    "https://biovet.onrender.com",
 ]
 # ------------------------------------------------------------------
 # Application definition
@@ -84,16 +82,8 @@ INSTALLED_APPS = [
     'products',
     'categories',
     'AI',
-    'User',
     "cart.apps.CartConfig",
-    'django.contrib.sites',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
 ]
-
-SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -104,7 +94,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -130,16 +119,25 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # ------------------------------------------------------------------
 # Database
 # ------------------------------------------------------------------
+import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+if os.environ.get("RENDER"):
+    DATABASE_PATH = "/var/data/db.sqlite3"
+else:
+    DATABASE_PATH = BASE_DIR / "db.sqlite3"
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": DATABASE_PATH,
     }
 }
 
-
 # ------------------------------------------------------------------
-# Auth / allauth
+# Auth (მხოლოდ ადმინ-პანელისთვის)
 # ------------------------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -148,29 +146,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
-]
-
-# მთავარ გვერდზე (/) არის login მოდალი
-LOGIN_URL = "/"
-LOGIN_REDIRECT_URL = "/product/"
-ACCOUNT_LOGOUT_REDIRECT_URL = "/"
-SOCIALACCOUNT_LOGIN_ON_GET = True
-
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'APP': {
-            'client_id': os.environ.get('GOOGLE_CLIENT_ID', ''),
-            'secret': os.environ.get('GOOGLE_CLIENT_SECRET', ''),
-            'key': '',
-        }
-    },
-}
-
-FACEBOOK_APP_ID = os.environ.get('FACEBOOK_APP_ID', '')
-FACEBOOK_APP_SECRET = os.environ.get('FACEBOOK_APP_SECRET', '')
 
 
 # ------------------------------------------------------------------
@@ -190,6 +165,21 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ------------------------------------------------------------------
+# Email
+# ------------------------------------------------------------------
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')   # Gmail App Password
+DEFAULT_FROM_EMAIL = os.environ.get(
+    'DEFAULT_FROM_EMAIL',
+    f'Biovet <{EMAIL_HOST_USER}>' if EMAIL_HOST_USER else 'Biovet <no-reply@localhost>',
+)
 
 
 # ------------------------------------------------------------------

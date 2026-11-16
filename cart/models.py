@@ -8,16 +8,27 @@ from products.models import Product
 
 
 class Cart(models.Model):
+    # რეგისტრაცია აღარ არის: კალათა სესიას უკავშირდება
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        related_name="cart"
+        related_name="cart",
+        null=True,
+        blank=True,
+    )
+    session_key = models.CharField(
+        max_length=40,
+        unique=True,
+        null=True,
+        blank=True,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.user.username}'s Cart"
+        if self.user_id:
+            return f"{self.user.username}'s Cart"
+        return f"Cart #{self.pk}"
 
     def get_total(self):
         return sum(item.total_price() for item in self.items.all())
@@ -85,7 +96,9 @@ class Order(models.Model):
     )
     user = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name='orders',
         verbose_name='მომხმარებელი'
     )
@@ -154,18 +167,15 @@ class Order(models.Model):
         verbose_name_plural = 'შეკვეთები'
 
     def __str__(self):
-        return f"#{self.user_order_number} — {self.user.username} — ₾{self.total}"
+        return f"#{self.user_order_number} — {self.first_name} {self.last_name} — ₾{self.total}"
 
     def save(self, *args, **kwargs):
         if not self.user_order_number:
             with transaction.atomic():
-                # იუზერის რიგს ვბლოკავთ, რომ ორმა ერთდროულმა შეკვეთამ ერთი ნომერი არ აიღოს
-                User.objects.select_for_update().filter(pk=self.user_id).first()
-                last_order = (
-                    Order.objects
-                    .filter(user=self.user)
-                    .aggregate(max_num=Max('user_order_number'))
-                )
+                # ნომერაცია საერთოა (რეგისტრირებული იუზერები აღარ არსებობს);
+                # ბოლო შეკვეთას ვბლოკავთ, რომ ორმა ერთდროულმა შეკვეთამ ერთი ნომერი არ აიღოს
+                Order.objects.select_for_update().order_by('-user_order_number').first()
+                last_order = Order.objects.aggregate(max_num=Max('user_order_number'))
                 self.user_order_number = (last_order['max_num'] or 0) + 1
                 super().save(*args, **kwargs)
             return

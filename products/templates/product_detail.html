@@ -1070,25 +1070,10 @@
     </a>
 
     <div class="profile">
-        {% if user.is_authenticated %}
-            <a href="{% url 'profile' %}" class="profile-user">
-                <i class="fa-solid fa-user"></i>
-                <span>{{ user.first_name|default:user.username }}</span>
-            </a>
-
-            <div class="Cart" id="cartToggle" role="button" tabindex="0" aria-label="კალათა">
-                <i class="fa-solid fa-cart-shopping"></i>
-                <span id="cartCount">0</span>
-            </div>
-
-            <a href="{% url 'logout' %}" class="logout-btn">
-                გასვლა
-            </a>
-        {% else %}
-            <a href="{% url 'index' %}" class="profile-icon-link" aria-label="შესვლა">
-                <i class="fa-solid fa-user"></i>
-            </a>
-        {% endif %}
+        <div class="Cart" id="cartToggle" role="button" tabindex="0" aria-label="კალათა">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cartCount">0</span>
+        </div>
     </div>
 </nav>
 
